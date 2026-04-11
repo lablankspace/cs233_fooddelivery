@@ -1,4 +1,6 @@
-class Customer extends User {
+package object;
+
+public class Customer extends User {
     private List<Order> orderHistory;
     Customer(String name, int id) { 
         super(name, id) 

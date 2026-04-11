@@ -1,4 +1,6 @@
-class Driver extends User {
+package object;
+
+public class Driver extends User {
     private Status status;
     private List<Order> orders;
     private List<Rate> rates;

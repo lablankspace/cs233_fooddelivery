@@ -1,4 +1,6 @@
-class Menu {
+package object;
+
+public class Menu {
     private Map<Item, double> menu;
     Menu()
     private void addItem(Item item) {

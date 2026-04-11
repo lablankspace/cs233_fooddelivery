@@ -1,4 +1,6 @@
-class Admin {
+package object;
+
+public class Admin {
     Admin() { super(name, id); }
     private addItem(Item item) {
 

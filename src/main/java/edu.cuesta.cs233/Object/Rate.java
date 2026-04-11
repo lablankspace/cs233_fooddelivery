@@ -1,4 +1,6 @@
-class Rate {
+package object;
+
+public class Rate {
     private double score;
     private String timestamp;
     Rate(double score) {

@@ -1,4 +1,6 @@
-class DriverAssignment {
+package service;
+
+public class DriverAssignment {
     private List<Driver> drivers;
     DriverAssignment() {
         List<Driver> drivers = new ArrayList<>();

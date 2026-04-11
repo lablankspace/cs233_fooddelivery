@@ -1,4 +1,4 @@
-package edu.cuesta.cs233;
+package app;
 
 public class Main {
     public static void main(String[] args){

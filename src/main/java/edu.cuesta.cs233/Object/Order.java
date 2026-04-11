@@ -1,4 +1,6 @@
-class Order {
+package object;
+
+public class Order {
     private Customer customer;
     private List<Item> items;
     private Status status;

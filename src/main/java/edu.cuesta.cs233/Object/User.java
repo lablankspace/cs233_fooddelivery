@@ -1,4 +1,6 @@
-abstract class User {
+package object;
+
+public abstract class User {
     protected String name;
     protected int id;
     User(String name, int id) {

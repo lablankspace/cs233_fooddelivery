@@ -1,4 +1,6 @@
-class OrderQueue {
+package service;
+
+public class OrderQueue {
     private Queue queue;
     OrderQueue(){
         Queue queue = new Queue<>();
