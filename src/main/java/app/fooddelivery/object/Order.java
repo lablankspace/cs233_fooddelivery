@@ -29,7 +29,7 @@ public class Order {
     public void updateStatus(Status status) {
         this.status = status;
     }
-    public enum Status {
+    public static enum Status {
         PLACED,
         ACCEPTED,
         INPROGRESS,

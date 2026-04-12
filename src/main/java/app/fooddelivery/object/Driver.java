@@ -39,15 +39,15 @@ public class Driver extends User {
         for (UserRating rate : ratings) {
             avg += rate.getScore();
         }
-        return (avg / 5);
+        return avg / ratings.size();
 
     }
     public void addRate(UserRating rate) {
         ratings.add(rate);
     }
-//    public void deleteAccount() {
-//        DriverAssignment.removeDriver(this);
-//    }
+    public void deleteAccount() {
+        DriverAssignment.removeDriver(this);
+    }
 
     @Override
     public String getRole() {
