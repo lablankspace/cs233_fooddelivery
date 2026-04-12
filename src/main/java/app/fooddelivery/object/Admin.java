@@ -1,7 +1,9 @@
 package app.fooddelivery.object;
 
+import java.util.UUID;
+
 public class Admin extends User{
-    public Admin(String name, int id) { super(name, id); }
+    public Admin(String name, UUID id) { super(name, id); }
     public Admin(User u) { super(u.getName(), u.getId()); }
     private void addItem(Item item) {
 

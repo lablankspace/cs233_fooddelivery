@@ -1,7 +1,6 @@
 app/fooddelivery/object/Driver$Status.class
 app/fooddelivery/object/User.class
 app/fooddelivery/object/Menu.class
-app/fooddelivery/service/Resturant.class
 app/fooddelivery/object/Driver.class
 app/fooddelivery/ui/Home.class
 app/fooddelivery/Main.class
@@ -15,4 +14,5 @@ app/fooddelivery/object/Order$Status.class
 app/fooddelivery/service/DriverAssignment.class
 app/fooddelivery/service/LoginProcess.class
 app/fooddelivery/object/UserRating.class
+app/fooddelivery/service/Restaurant.class
 app/fooddelivery/service/OrderQueue.class

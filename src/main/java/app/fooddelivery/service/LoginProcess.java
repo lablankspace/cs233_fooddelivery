@@ -3,7 +3,7 @@ package app.fooddelivery.service;
 import app.fooddelivery.object.User;
 
 public class LoginProcess {
-    public static int checkLogin(Resturant resturant, String user, String pass) {
+    public static int checkLogin(Restaurant resturant, String user, String pass) {
         if (resturant.containsUser(user)) {
             User u = resturant.getUser(user);
             if (pass.equals(user)) {
@@ -15,7 +15,7 @@ public class LoginProcess {
         }
         else return 3;
     }
-    public static User getUser(Resturant resturant, String name) {
+    public static User getUser(Restaurant resturant, String name) {
         return (resturant.getUser(name));
     }
 }

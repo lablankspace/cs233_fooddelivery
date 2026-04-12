@@ -10,31 +10,32 @@ import app.fooddelivery.object.User;
 
 
 
-public class Resturant {
+public class Restaurant {
     private final List<User> users;
 
-    public Resturant() {
+    public Restaurant() {
         this.users = new ArrayList<>();
     }
 
     public void addUser(User u, String password) {
         if (!users.contains(u)) {
-            if (!isNameTaken(u.getName(), users)) {
-                if (u.getRole().equals("Admin")) {
-                    users.add(new Admin(u));
-                }
-                else if (u.getRole().equals("Driver")) {
-                    users.add(new Driver(u));
-                }
-                else {
-                    users.add(new Customer(u));
+            if (!isNameTaken(u.getName(), users) && (!isIdTaken(u.Id()))) {
+                switch (u.getRole()) {
+                    case "Admin":
+                        users.add(new Admin(u));
+                        break;
+                    case "Driver":
+                        users.add(new Driver(u));
+                        break;
+                    default:
+                        users.add(new Customer(u));
+                        break;
                 }
             }
         }
     }
     public boolean containsUser(User u) {
-        if (users.contains(u)) return true;
-        else return false;
+        return users.contains(u);
     }
     public boolean containsUser(String name) {
         for ( User u : users) {
@@ -54,6 +55,14 @@ public class Resturant {
     public static boolean isNameTaken(String name, List<? extends User> users) {
         for (User u : users) {
             if (u.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public static boolean isIdTaken(int id, List<? extends User> users) {
+        for (User u : users) {
+            if (u.getId().equals(id)) {
                 return true;
             }
         }

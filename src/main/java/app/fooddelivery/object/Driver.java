@@ -1,15 +1,22 @@
 package app.fooddelivery.object;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 import app.fooddelivery.service.DriverAssignment;
 
 public class Driver extends User {
     private Status status;
-    private ArrayList<Order> orders;
-    private ArrayList<UserRating> ratings;
-    public Driver(String name, int id) {
-        super(name, id);
+    private final ArrayList<Order> orders;
+    private final ArrayList<UserRating> ratings;
+    public Driver(String name, UUID id) {
+        super(name,id);
+        this.status = Status.FREE;
+        orders = new ArrayList<>();
+        ratings = new ArrayList<>();
+    }
+    public Driver(String name) {
+        super(name);
         this.status = Status.FREE;
         orders = new ArrayList<>();
         ratings = new ArrayList<>();

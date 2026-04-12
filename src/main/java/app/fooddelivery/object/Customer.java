@@ -1,10 +1,11 @@
 package app.fooddelivery.object;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class Customer extends User {
-    private ArrayList<Order> orderHistory;
-    public Customer(String name, int id) {
+    private final ArrayList<Order> orderHistory;
+    public Customer(String name, UUID id) {
         super(name, id);
         orderHistory = new ArrayList<>();
     }

@@ -12,12 +12,12 @@ import app.fooddelivery.object.Admin;
 import app.fooddelivery.object.Customer;
 import app.fooddelivery.object.Driver;
 import app.fooddelivery.service.LoginProcess;
-import app.fooddelivery.service.Resturant;
+import app.fooddelivery.service.Restaurant;
 
 
 
 public class Login {
-        public static void run(Resturant resturant) {
+        public static void run(Restaurant restaurant) {
                 DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
                 Terminal terminal = null;
                 try {
@@ -65,15 +65,15 @@ public class Login {
                                     break;
                                 case 1:
                                     //Add a login / dashboard call here
-                                    switch (LoginProcess.checkLogin(resturant, user.toString(), pass.toString())) {
+                                    switch (LoginProcess.checkLogin(restaurant, user.toString(), pass.toString())) {
                                         case 0:
-                                            Home.admin(resturant, (Admin) LoginProcess.getUser(resturant, user.toString()));
+                                            Home.admin(restaurant, (Admin) LoginProcess.getUser(restaurant, user.toString()));
                                             break OUTER;
                                         case 1:
-                                            Home.driver(resturant, (Driver) LoginProcess.getUser(resturant, user.toString()));
+                                            Home.driver(restaurant, (Driver) LoginProcess.getUser(restaurant, user.toString()));
                                             break OUTER;
                                         case 2:
-                                            Home.customer(resturant, (Customer) LoginProcess.getUser(resturant, user.toString()));
+                                            Home.customer(restaurant, (Customer) LoginProcess.getUser(restaurant, user.toString()));
                                             break OUTER;
                                         case 3:
                                             Utils.subTitle(screenSize, text, "INCORRECT LOGIN PLEASE TRY AGAIN", 2);

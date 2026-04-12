@@ -1,15 +1,15 @@
 package app.fooddelivery;
 
-import app.fooddelivery.service.Resturant;
+import app.fooddelivery.service.Restaurant;
 import app.fooddelivery.ui.Login;
 
 public class Main {
     public static void main(String[] args){
-        Resturant resturant = null;
-        boolean createdNew = false;
+        Restaurant resturant = new Restaurant();
+      //  boolean createdNew = false;
 
         // Try loading saved school data
-        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream("school.dat"))) {
+      /*  try (ObjectInputStream in = new ObjectInputStream(new FileInputStream("school.dat"))) {
             school = (School) in.readObject();
             System.out.println("Loaded school data.");
         } catch (FileNotFoundException e) {
@@ -38,7 +38,7 @@ public class Main {
             school.addTeacher(firstTeacher, password);
             System.out.println("New School and Teacher created.");
         }
-
+*/
         try {
             Login.run(resturant);        
         } catch(Exception e) {
