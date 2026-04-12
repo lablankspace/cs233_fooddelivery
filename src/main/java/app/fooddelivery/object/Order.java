@@ -1,33 +1,35 @@
-package object;
+package app.fooddelivery.object;
+
+import java.util.ArrayList;
 
 public class Order {
     private Customer customer;
-    private List<Item> items;
+    private ArrayList<Item> items;
     private Status status;
     Order(Customer customer) {
         this.customer = customer;
-        List<Item> items = new ArrayList<>();
+        items = new ArrayList<>();
         this.status = Status.PLACED;
     }
-    public void addItem(item) {
+    public void addItem(Item item) {
         items.add(item);
     }
-    public void removeItem(item) {
+    public void removeItem(Item item) {
         items.remove(item);
     }
-    public void getCustomer() {
+    public Customer getCustomer() {
         return customer;
     }
-    public List<Item> getItems() {
+    public ArrayList<Item> getItems() {
         return items;
     }
-    public String getStatus() {
+    public Status getStatus() {
         return status;
     }
     public void updateStatus(Status status) {
         this.status = status;
     }
-    enum Status {
+    public enum Status {
         PLACED,
         ACCEPTED,
         INPROGRESS,

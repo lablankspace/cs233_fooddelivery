@@ -1,9 +1,14 @@
-package object;
+package app.fooddelivery.object;
 
-public class Rate {
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+public class UserRating {
     private double score;
     private String timestamp;
-    Rate(double score) {
+    private User user;
+    private Driver driver;
+    UserRating(User from, Driver to, double score) {
         this.score = score;
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

@@ -1,4 +1,4 @@
-package object;
+package app.fooddelivery.object;
 
 public abstract class User {
     protected String name;
@@ -9,5 +9,5 @@ public abstract class User {
     }
     public String getName() { return name; }
     public int getId() { return id; }
-    abstract getRole()
+    abstract String getRole();
 }

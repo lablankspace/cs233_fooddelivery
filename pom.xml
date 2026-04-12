@@ -1,7 +1,19 @@
 <project>
     <modelVersion>4.0.0</modelVersion>  
 
-    <groupId>edu.cuesta.cs233</groupId>  
+    <groupId>app.foodelivery</groupId>  
     <artifactId>FoodDelivery</artifactId>  
     <version>1.0</version>
+    <build>
+        <plugins>
+            <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.1.0</version>
+            <configuration>
+                <mainClass>app.fooddelivery.Main</mainClass>
+            </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
