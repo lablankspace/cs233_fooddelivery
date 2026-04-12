@@ -2,6 +2,7 @@ app/fooddelivery/object/Driver$Status.class
 app/fooddelivery/object/User.class
 app/fooddelivery/object/Menu.class
 app/fooddelivery/object/Driver.class
+app/fooddelivery/ui/lanterna.class
 app/fooddelivery/Main.class
 app/fooddelivery/object/Customer.class
 app/fooddelivery/object/Order.class
