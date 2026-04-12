@@ -5,6 +5,7 @@ app/fooddelivery/object/Driver.class
 app/fooddelivery/ui/lanterna.class
 app/fooddelivery/Main.class
 app/fooddelivery/object/Customer.class
+app/fooddelivery/service/Login.class
 app/fooddelivery/object/Order.class
 app/fooddelivery/object/Admin.class
 app/fooddelivery/object/Item.class
