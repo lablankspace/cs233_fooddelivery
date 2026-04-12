@@ -9,8 +9,6 @@ import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
 
-import app.fooddelivery.service.Login;
-
 public class lanterna {
         public static void login() {
                 DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
@@ -32,7 +30,9 @@ public class lanterna {
                         String[] options = {"Username: ", "Password: ", "Exit"};
                         for (int i = 0; i < options.length; i++) {
                                 String prefix = (i == selection) ? "> " : "  ";
-                                text.putString(0, 3 + i, prefix + options[i]);
+                                String line = prefix + options[i];
+                                int x = screenSize.getColumns() / 2 - line.length() / 2;
+                                text.putString(x, 3 + i, line);
                         }
                         terminal.flush();
                         StringBuilder user = new StringBuilder();
@@ -50,7 +50,9 @@ public class lanterna {
                                     selection = 1;
                                     break;
                                 case 1:
-                                    System.out.println(Login.checkLogin(user.toString(), pass.toString()));
+                                    //Add a login / dashboard call here
+                                    
+                                    break;
                                 case 2:
                                     break OUTER;
                                 default:
@@ -60,18 +62,9 @@ public class lanterna {
                         if ( key.getKeyType() == KeyType.Backspace) { 
                                 if ( selection == 0 && user.length() > 0 ) { 
                                         user.deleteCharAt( user.length() - 1 ); 
-                                        user.append(' '); 
-                                        String line = "> " + options[selection]; 
-                                        line += " " + user; 
-                                        text.putString(0, 3 + selection, line); 
-                                        terminal.flush(); 
-                                        user.deleteCharAt( user.length() - 1); 
                                 } 
                                 if ( selection == 1 && pass.length() > 0 ) { 
                                         pass.deleteCharAt( pass.length() - 1 ); 
-                                        pass.append(' '); String line = "> " + options[selection]; 
-                                        line += " " + pass; text.putString(0, 3 + selection, line); 
-                                        terminal.flush(); pass.deleteCharAt( pass.length() - 1); 
                                 }
                         }
                         if ( key.getKeyType() == KeyType.Character) {
@@ -81,9 +74,14 @@ public class lanterna {
                         for (int i = 0; i < options.length; i++) {
                             String prefix = (i == selection) ? "> " : "  ";
                             String line = prefix + options[i];
-                            if ( i == selection && selection == 0) line += " " + user;
-                            if ( i == selection && selection == 1) line += " " + pass;
-                            text.putString(0, 3 + i, line);
+                            if ( i == 0) line += " " + user;
+                            if ( i == 1) {
+                                String mask = "*".repeat(pass.length());
+                                line += " " + mask;
+                            }
+                            text.putString(0,3 + i, " ".repeat(screenSize.getColumns()));
+                            int x = screenSize.getColumns() / 2 - line.length() / 2;
+                            text.putString(x, 3 + i, line);
                         }
                         terminal.flush();
                     }
