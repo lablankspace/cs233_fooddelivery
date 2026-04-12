@@ -8,6 +8,9 @@
 /home/lablankspace/coding/cs233_fooddelivery/src/main/java/app/fooddelivery/object/User.java
 /home/lablankspace/coding/cs233_fooddelivery/src/main/java/app/fooddelivery/object/UserRating.java
 /home/lablankspace/coding/cs233_fooddelivery/src/main/java/app/fooddelivery/service/DriverAssignment.java
-/home/lablankspace/coding/cs233_fooddelivery/src/main/java/app/fooddelivery/service/Login.java
+/home/lablankspace/coding/cs233_fooddelivery/src/main/java/app/fooddelivery/service/LoginProcess.java
 /home/lablankspace/coding/cs233_fooddelivery/src/main/java/app/fooddelivery/service/OrderQueue.java
-/home/lablankspace/coding/cs233_fooddelivery/src/main/java/app/fooddelivery/ui/lanterna.java
+/home/lablankspace/coding/cs233_fooddelivery/src/main/java/app/fooddelivery/service/Resturant.java
+/home/lablankspace/coding/cs233_fooddelivery/src/main/java/app/fooddelivery/ui/Home.java
+/home/lablankspace/coding/cs233_fooddelivery/src/main/java/app/fooddelivery/ui/Login.java
+/home/lablankspace/coding/cs233_fooddelivery/src/main/java/app/fooddelivery/ui/Utils.java

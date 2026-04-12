@@ -1,7 +1,8 @@
 package app.fooddelivery.object;
 
 public class Admin extends User{
-    Admin(String name, int id) { super(name, id); }
+    public Admin(String name, int id) { super(name, id); }
+    public Admin(User u) { super(u.getName(), u.getId()); }
     private void addItem(Item item) {
 
     } 

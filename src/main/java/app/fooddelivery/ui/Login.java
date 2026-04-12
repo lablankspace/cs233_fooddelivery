@@ -1,6 +1,5 @@
 package app.fooddelivery.ui;
 
-import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.TextGraphics;
@@ -9,8 +8,16 @@ import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
 
-public class lanterna {
-        public static void login() {
+import app.fooddelivery.object.Admin;
+import app.fooddelivery.object.Customer;
+import app.fooddelivery.object.Driver;
+import app.fooddelivery.service.LoginProcess;
+import app.fooddelivery.service.Resturant;
+
+
+
+public class Login {
+        public static void run(Resturant resturant) {
                 DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
                 Terminal terminal = null;
                 try {
@@ -20,30 +27,37 @@ public class lanterna {
 
                         final TextGraphics text = terminal.newTextGraphics();
                         text.setForegroundColor(TextColor.ANSI.GREEN);
-                        String output = "ISLAND GIRLS DELIVERY SERVICE";
-                        text.putString(screenSize.getColumns() / 2 - output.length() / 2, 0, output, SGR.BOLD);
 
-                        output = "PLEASE LOGIN";
-                        text.putString(screenSize.getColumns() / 2 - output.length() / 2, 1, output, SGR.BOLD);
+                        Utils.Title(screenSize, text);
+                        Utils.subTitle(screenSize, text, "PLEASE LOGIN", 1);
                         
                         int selection = 0;
                         String[] options = {"Username: ", "Password: ", "Exit"};
-                        for (int i = 0; i < options.length; i++) {
-                                String prefix = (i == selection) ? "> " : "  ";
-                                String line = prefix + options[i];
-                                int x = screenSize.getColumns() / 2 - line.length() / 2;
-                                text.putString(x, 3 + i, line);
-                        }
+                        Utils.selection(selection, options, screenSize, text, 3);
+
                         terminal.flush();
                         StringBuilder user = new StringBuilder();
                         StringBuilder pass = new StringBuilder();
+
                     OUTER:
                     while (true) {
                         KeyStroke key = terminal.readInput();
-                        if ( key.getKeyType() == KeyType.ArrowDown ) selection++;
-                        if ( key.getKeyType() == KeyType.ArrowUp ) selection--;
-                        if (selection < 0) selection = options.length - 1;
-                        if (selection >= options.length) selection = 0;
+                        if ( key.getKeyType() == KeyType.ArrowDown ) {
+                            selection++;
+                            Utils.selection(selection, options, screenSize, text, 3);
+                        }
+                        if ( key.getKeyType() == KeyType.ArrowUp ) { 
+                            selection--;
+                            Utils.selection(selection, options, screenSize, text, 3);
+                        }
+                        if (selection < 0) {
+                            selection = options.length - 1;
+                            Utils.selection(selection, options, screenSize, text, 3);
+                        }
+                        if (selection >= options.length) {
+                            selection = 0;
+                            Utils.selection(selection, options, screenSize, text, 3);
+                        }
                         if (key.getKeyType() == KeyType.Enter) {
                             switch (selection) {
                                 case 0:
@@ -51,7 +65,20 @@ public class lanterna {
                                     break;
                                 case 1:
                                     //Add a login / dashboard call here
-                                    
+                                    switch (LoginProcess.checkLogin(resturant, user.toString(), pass.toString())) {
+                                        case 0:
+                                            Home.admin(resturant, (Admin) LoginProcess.getUser(resturant, user.toString()));
+                                            break OUTER;
+                                        case 1:
+                                            Home.driver(resturant, (Driver) LoginProcess.getUser(resturant, user.toString()));
+                                            break OUTER;
+                                        case 2:
+                                            Home.customer(resturant, (Customer) LoginProcess.getUser(resturant, user.toString()));
+                                            break OUTER;
+                                        case 3:
+                                            Utils.subTitle(screenSize, text, "INCORRECT LOGIN PLEASE TRY AGAIN", 2);
+                                            break;
+                                    }
                                     break;
                                 case 2:
                                     break OUTER;
@@ -71,31 +98,16 @@ public class lanterna {
                             if (selection == 0 ) user.append(key.getCharacter());
                             if (selection == 1 ) pass.append(key.getCharacter());
                         }
-                        for (int i = 0; i < options.length; i++) {
-                            String prefix = (i == selection) ? "> " : "  ";
-                            String line = prefix + options[i];
-                            if ( i == 0) line += " " + user;
-                            if ( i == 1) {
-                                String mask = "*".repeat(pass.length());
-                                line += " " + mask;
-                            }
-                            text.putString(0,3 + i, " ".repeat(screenSize.getColumns()));
-                            int x = screenSize.getColumns() / 2 - line.length() / 2;
-                            text.putString(x, 3 + i, line);
-                        }
+                        String[] labels = {options[0], options[1]};
+                        String[] inputs = {user.toString(), pass.toString()};
+                        boolean[] hidden = {false, true};
+                        
+                        Utils.input(selection, labels, inputs, screenSize, text, 3, hidden);
                         terminal.flush();
                     }
                         Thread.sleep(200);
                 } catch(Exception e) {
                         e.printStackTrace();
-                } finally {
-                        if(terminal != null) {
-                        try {
-                                terminal.close();
-                        } catch(Exception e) {
-                                e.printStackTrace();
-                                }
-                        }
-                }
+                } 
         }
 }

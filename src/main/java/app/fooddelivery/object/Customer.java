@@ -4,8 +4,12 @@ import java.util.ArrayList;
 
 public class Customer extends User {
     private ArrayList<Order> orderHistory;
-    Customer(String name, int id) {
+    public Customer(String name, int id) {
         super(name, id);
+        orderHistory = new ArrayList<>();
+    }
+    public Customer(User u) {
+        super(u.getName(), u.getId());
         orderHistory = new ArrayList<>();
     }
 

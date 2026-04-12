@@ -9,5 +9,5 @@ public abstract class User {
     }
     public String getName() { return name; }
     public int getId() { return id; }
-    abstract String getRole();
+    public abstract String getRole();
 }
