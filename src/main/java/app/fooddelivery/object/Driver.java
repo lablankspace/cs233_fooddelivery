@@ -3,7 +3,6 @@ package app.fooddelivery.object;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import app.fooddelivery.service.DriverAssignment;
 
 public class Driver extends User {
     private Status status;
@@ -58,10 +57,6 @@ public class Driver extends User {
     public void addRate(UserRating rate) {
         ratings.add(rate);
     }
-    public void deleteAccount() {
-        DriverAssignment.removeDriver(this);
-    }
-
     @Override
     public String getRole() {
         return "Driver";
@@ -71,5 +66,4 @@ public class Driver extends User {
         BUSY,
         OFFLINE
     }
-
 }

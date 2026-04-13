@@ -1,23 +1,13 @@
 package app.fooddelivery.service;
 
-import java.util.HashSet;
 import app.fooddelivery.object.Driver;
 import app.fooddelivery.object.Order;
+import java.util.HashSet;
 
 public class DriverAssignment {
-    private static HashSet<Driver> drivers;
-    DriverAssignment() {
-        drivers = new HashSet<>();
-    }
-    public static void newDriver(Driver driver) {
-        drivers.add(driver);
-    }
-    public static void removeDriver(Driver driver) {
-        drivers.remove(driver);
-    }
-    public Driver findDriver() {
+    public static Driver findDriver(Restaurant restaurant) {
         HashSet<Driver> available = new HashSet<>();
-        for ( Driver driver : drivers) {
+        for ( Driver driver : restaurant.getDrivers()) {
             if (driver.getStatus() == Driver.Status.FREE) {
                 available.add(driver);
             }
@@ -30,8 +20,8 @@ public class DriverAssignment {
         }
         return best;
     }
-    public void assignDriver(Order order) {
-        findDriver().addOrder(order);
+    public static void assignDriver(Restaurant restaurant, Order order) {
+        findDriver(restaurant).addOrder(order);
         order.updateStatus(Order.Status.ACCEPTED);
     }
 }

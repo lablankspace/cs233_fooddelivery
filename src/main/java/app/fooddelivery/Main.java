@@ -5,7 +5,7 @@ import app.fooddelivery.ui.Login;
 
 public class Main {
     public static void main(String[] args){
-        Restaurant resturant = new Restaurant();
+        Restaurant restaurant = new Restaurant();
       //  boolean createdNew = false;
 
         // Try loading saved school data
@@ -40,7 +40,7 @@ public class Main {
         }
 */
         try {
-            Login.run(resturant);        
+            Login.run(restaurant);        
         } catch(Exception e) {
             e.printStackTrace();
         } 
