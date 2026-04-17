@@ -1,12 +1,15 @@
 package app.fooddelivery.object;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class Customer extends User {
-    private ArrayList<Order> orderHistory;
-    Customer(String name, int id) {
+    protected Customer(String name, UUID id) {
         super(name, id);
-        orderHistory = new ArrayList<>();
+    }
+
+    public Customer(String name) {
+        this(name, UUID.randomUUID());
     }
 
     @Override
@@ -21,7 +24,7 @@ public class Customer extends User {
         if (rating < 1 || rating > 5) {
             throw new IllegalArgumentException("Rating must be between 1 and 5");
         }
-        UserRating rate = new UserRating(this,driver,rating);
+        UserRating rate = new UserRating(this,rating);
         driver.addRate(rate);
     }
     public String viewOrderStatus(Order order) {
