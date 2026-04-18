@@ -1,9 +1,14 @@
 package app.fooddelivery.object;
 
-import com.google.gson.*;
-
 import java.lang.reflect.Type;
 import java.util.UUID;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
 public class Deserialization {
     public static class StateDeserializer implements JsonDeserializer<State> {
@@ -15,7 +20,7 @@ public class Deserialization {
             JsonArray users = object.getAsJsonArray("users");
             for (JsonElement userElement : users){
                 String role = userElement.getAsJsonObject().get("role").getAsString();
-                state.users.add(context.deserialize(userElement,role.equals("Customer") ? Customer.class : (role.equals("Driver") ? Driver.class : Admin.class)));
+                state.users.add(context.deserialize(userElement,role.equals("Admin") ? Admin.class : (role.equals("Driver") ? Driver.class : Customer.class)));
             }
             JsonArray orders = object.getAsJsonArray("orders");
             for (JsonElement orderElement : orders){
