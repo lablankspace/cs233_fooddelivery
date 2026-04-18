@@ -1,11 +1,8 @@
 package app.fooddelivery;
 
 import app.fooddelivery.service.Restaurant;
-import app.fooddelivery.ui.Login;
 import app.fooddelivery.service.StateManager;
-
-import java.util.Objects;
-import java.util.UUID;
+import app.fooddelivery.ui.Login;
 
 public class Main {
     public static void main(String[] args){

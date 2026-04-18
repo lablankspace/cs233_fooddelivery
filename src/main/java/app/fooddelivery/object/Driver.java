@@ -3,28 +3,18 @@ package app.fooddelivery.object;
 import java.util.ArrayList;
 import java.util.UUID;
 
-
 public class Driver extends User {
     private Status status;
     private final ArrayList<Order> orders;
-    private final ArrayList<UserRating> ratings;
-    public Driver(String name, UUID id) {
+    final protected ArrayList<UserRating> ratings;
+    protected Driver(String name, UUID id) {
         super(name,id);
         this.status = Status.FREE;
         orders = new ArrayList<>();
         ratings = new ArrayList<>();
     }
     public Driver(String name) {
-        super(name);
-        this.status = Status.FREE;
-        orders = new ArrayList<>();
-        ratings = new ArrayList<>();
-    }
-    public Driver(User u) {
-        super (u.getName(), u.getId());
-        this.status = Status.FREE;
-        orders = new ArrayList<>();
-        ratings = new ArrayList<>();
+        this(name,UUID.randomUUID());
     }
     public void addOrder(Order order) {
         orders.add(order);
