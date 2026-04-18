@@ -1,12 +1,13 @@
 package app.fooddelivery.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import app.fooddelivery.object.Admin;
 import app.fooddelivery.object.Customer;
 import app.fooddelivery.object.Driver;
 import app.fooddelivery.object.User;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 
 
@@ -22,13 +23,13 @@ public class Restaurant {
             if (!isNameTaken(u.getName(), users) && (!isIdTaken(u.getId(), users))) {
                 switch (u.getRole()) {
                     case "Admin":
-                        users.add(new Admin(u));
+                      //  users.add(new Admin(u));
                         break;
                     case "Driver":
-                        users.add(new Driver(u));
+                        //users.add(new Driver(u));
                         break;
                     default:
-                        users.add(new Customer(u));
+                        //users.add(new Customer(u));
                         break;
                 }
             }
@@ -65,7 +66,7 @@ public class Restaurant {
     public List<Driver> getDrivers() {
         List<Driver> drivers = new ArrayList<>();
         for ( User u : users) {
-            drivers.add(new Driver(u));
+         //   drivers.add(new Driver(u));
         }
         return drivers;
     }

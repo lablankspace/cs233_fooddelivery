@@ -7,6 +7,7 @@ public class Customer extends User {
     private final ArrayList<Order> orderHistory;
     public Customer(String name, UUID id) {
         super(name, id);
+        this.orderHistory = new ArrayList<>();
     }
 
     public Customer(String name) {

@@ -16,6 +16,7 @@ public class Driver extends User {
     public Driver(String name) {
         this(name,UUID.randomUUID());
     }
+
     public void addOrder(Order order) {
         orders.add(order);
     }

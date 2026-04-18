@@ -15,7 +15,7 @@ public abstract class User {
     }
     public String getName() { return name; }
     public UUID getId() { return id; }
-    abstract String getRole();
+    public abstract String getRole();
     @Override
     public int hashCode() {
         return id.hashCode();
