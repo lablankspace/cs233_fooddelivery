@@ -1,13 +1,15 @@
 package app.fooddelivery;
 
+import app.fooddelivery.object.State;
 import app.fooddelivery.service.Restaurant;
-import app.fooddelivery.service.StateManager;
+import app.fooddelivery.service.StateLoader;
 import app.fooddelivery.ui.Login;
+
+import java.io.File;
 
 public class Main {
     public static void main(String[] args){
-        StateManager stateManager = new StateManager();
-        System.out.println(stateManager.getJson());
+        State state = StateLoader.loadFrom(new File("state.json")).orElseGet(State::new);
         Restaurant restaurant = new Restaurant();
       //  boolean createdNew = false;
 

@@ -4,13 +4,14 @@ import app.fooddelivery.object.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.util.UUID;
+import java.io.*;
+import java.util.Optional;
 
-public class StateManager {
-    private final Gson gson;
-    private final State state;
-    public StateManager(){
-        this.gson = new GsonBuilder()
+public class StateLoader {
+    private static Gson gson;
+    private static void initGsonIfNull(){
+        if (gson != null)return;
+        gson = new GsonBuilder()
                 .setPrettyPrinting()
                 // State
                 .registerTypeAdapter(State.class, new Serialization.StateSerializer())
@@ -28,10 +29,20 @@ public class StateManager {
                 .registerTypeAdapter(UserRating.class, new Serialization.UserRatingSerializer())
                 .registerTypeAdapter(UserRating.class, new Deserialization.UserRatingDeserializer())
                 .create();
-        this.state = new State();
+    }
+    public static Optional<State> loadFrom(File file){
+        initGsonIfNull();
+        try (FileReader reader = new FileReader(file)){
+            return Optional.of(gson.fromJson(reader,State.class));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
-    public String getJson(){
-        return this.gson.toJson(state);
+    public static void saveTo(File file, State state) throws IOException {
+        initGsonIfNull();
+        FileWriter writer = new FileWriter(file);
+        gson.toJson(state, writer);
+        writer.close();
     }
 }
