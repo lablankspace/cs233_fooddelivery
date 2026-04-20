@@ -5,16 +5,21 @@ import java.util.UUID;
 
 public class Customer extends User {
     private final ArrayList<Order> orderHistory;
-    public Customer(String name, UUID id) {
-        super(name, id);
+    public Customer(String name, UUID id, String password) {
+        super(name, id, password);
         this.orderHistory = new ArrayList<>();
     }
 
-    public Customer(String name) {
-        this(name, UUID.randomUUID());
+    protected Customer(String name, UUID id, byte[] passwordHash) {
+        super(name, id, passwordHash);
+        this.orderHistory = new ArrayList<>();
+    }
+
+    public Customer(String name, String password) {
+        this(name, UUID.randomUUID(), password);
     }
     public Customer(User u) {
-        super(u.getName(), u.getId());
+        super(u.getName(), u.getId(), u.getPasswordHash());
         orderHistory = new ArrayList<>();
     }
 

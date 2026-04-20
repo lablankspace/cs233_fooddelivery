@@ -52,7 +52,7 @@ public class Deserialization {
         @Override
         public Customer deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject object = json.getAsJsonObject();
-            return new Customer(object.get("name").getAsString(),UUID.fromString(object.get("id").getAsString()));
+            return new Customer(object.get("name").getAsString(),UUID.fromString(object.get("id").getAsString()),hexToBytes(object.get("phash").getAsString()));
         }
     }
     public static class DriverDeserializer implements JsonDeserializer<Driver> {
@@ -60,7 +60,7 @@ public class Deserialization {
         @Override
         public Driver deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject object = json.getAsJsonObject();
-            return new Driver(object.get("name").getAsString(),UUID.fromString(object.get("id").getAsString()));
+            return new Driver(object.get("name").getAsString(),UUID.fromString(object.get("id").getAsString()),hexToBytes(object.get("phash").getAsString()));
         }
     }
     public static class UserRatingDeserializer implements JsonDeserializer<UserRating> {
@@ -70,5 +70,24 @@ public class Deserialization {
             JsonObject object = json.getAsJsonObject();
             return new UserRating(UUID.fromString(object.get("creatorId").getAsString()),object.get("score").getAsDouble(),object.get("timestamp").getAsString());
         }
+    }
+    private static byte[] hexToBytes(String hex) {
+        int len = hex.length();
+        if (len % 2 != 0) {
+            throw new IllegalArgumentException("Hex string must have even length");
+        }
+
+        byte[] result = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            int high = Character.digit(hex.charAt(i), 16);
+            int low  = Character.digit(hex.charAt(i + 1), 16);
+
+            if (high == -1 || low == -1) {
+                throw new IllegalArgumentException("Invalid hex character");
+            }
+
+            result[i / 2] = (byte) ((high << 4) + low);
+        }
+        return result;
     }
 }

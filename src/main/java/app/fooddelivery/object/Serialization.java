@@ -43,6 +43,7 @@ public class Serialization {
             obj.addProperty("name",customer.getName());
             obj.addProperty("id",customer.getId().toString());
             obj.addProperty("role",customer.getRole());
+            obj.addProperty("phash",customer.getId().toString());
 
             return obj;
         }

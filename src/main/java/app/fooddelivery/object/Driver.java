@@ -8,13 +8,20 @@ public class Driver extends User {
     private final ArrayList<Order> orders;
     final protected ArrayList<UserRating> ratings;
     protected Driver(String name, UUID id) {
-        super(name,id);
+        super(name,id.toString());
         this.status = Status.FREE;
         orders = new ArrayList<>();
         ratings = new ArrayList<>();
     }
     public Driver(String name) {
         this(name,UUID.randomUUID());
+    }
+
+    protected Driver(String name, UUID id, byte[] phashes) {
+        super(name,id,phashes);
+        this.status = Status.FREE;
+        orders = new ArrayList<>();
+        ratings = new ArrayList<>();
     }
 
     public void addOrder(Order order) {
