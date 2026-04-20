@@ -34,6 +34,20 @@ public class Serialization {
             return obj;
         }
     }
+    public static class AdminSerializer implements JsonSerializer<Admin> {
+
+        @Override
+        public JsonElement serialize(Admin admin, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject obj = new JsonObject();
+
+            obj.addProperty("name",admin.getName());
+            obj.addProperty("id",admin.getId().toString());
+            obj.addProperty("role",admin.getRole());
+            obj.addProperty("phash",admin.getPasswordHashHex());
+
+            return obj;
+        }
+    }
     public static class CustomerSerializer implements JsonSerializer<Customer> {
 
         @Override
@@ -43,7 +57,7 @@ public class Serialization {
             obj.addProperty("name",customer.getName());
             obj.addProperty("id",customer.getId().toString());
             obj.addProperty("role",customer.getRole());
-            obj.addProperty("phash",customer.getId().toString());
+            obj.addProperty("phash",customer.getPasswordHashHex());
 
             return obj;
         }
@@ -57,6 +71,7 @@ public class Serialization {
             obj.addProperty("name",driver.getName());
             obj.addProperty("id",driver.getId().toString());
             obj.addProperty("role",driver.getRole());
+            obj.addProperty("phash",driver.getPasswordHashHex());
             obj.add("ratings", context.serialize(driver.ratings));
 
             return obj;
