@@ -47,6 +47,14 @@ public class Deserialization {
             return new Order(id,customerId);
         }
     }
+    public static class AdminDeserializer implements JsonDeserializer<Admin> {
+
+        @Override
+        public Admin deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject object = json.getAsJsonObject();
+            return new Admin(object.get("name").getAsString(),UUID.fromString(object.get("id").getAsString()),hexToBytes(object.get("phash").getAsString()));
+        }
+    }
     public static class CustomerDeserializer implements JsonDeserializer<Customer> {
 
         @Override

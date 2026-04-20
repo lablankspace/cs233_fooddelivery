@@ -20,8 +20,8 @@ public class StateLoader {
                 .registerTypeAdapter(Order.class, new Serialization.OrderSerializer())
                 .registerTypeAdapter(Order.class, new Deserialization.OrderDeserializer())
                 // Admin
-                .registerTypeAdapter(Customer.class, new Serialization.AdminSerializer())
-                //.registerTypeAdapter(Customer.class, new Deserialization.CustomerDeserializer())
+                .registerTypeAdapter(Admin.class, new Serialization.AdminSerializer())
+                .registerTypeAdapter(Admin.class, new Deserialization.AdminDeserializer())
                 // Customer
                 .registerTypeAdapter(Customer.class, new Serialization.CustomerSerializer())
                 .registerTypeAdapter(Customer.class, new Deserialization.CustomerDeserializer())
