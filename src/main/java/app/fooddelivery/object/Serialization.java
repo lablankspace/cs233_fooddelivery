@@ -30,6 +30,19 @@ public class Serialization {
 
             obj.addProperty("id",order.getId().toString());
             obj.add("customerId",context.serialize(order.getCustomer().getId()));
+            obj.add("items",context.serialize(order.getItems()));
+
+            return obj;
+        }
+    }
+    public static class QuantizedItemSerializer implements JsonSerializer<QuantizedItem> {
+
+        @Override
+        public JsonElement serialize(QuantizedItem quantizedItem, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject obj = new JsonObject();
+
+            obj.addProperty("itemId",quantizedItem.getItemId().toString());
+            obj.addProperty("quantity",quantizedItem.getQuantity());
 
             return obj;
         }

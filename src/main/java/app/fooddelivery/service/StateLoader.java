@@ -19,6 +19,9 @@ public class StateLoader {
                 // Order
                 .registerTypeAdapter(Order.class, new Serialization.OrderSerializer())
                 .registerTypeAdapter(Order.class, new Deserialization.OrderDeserializer())
+                // QuantizedItemSerializer
+                .registerTypeAdapter(QuantizedItem.class, new Serialization.QuantizedItemSerializer())
+                .registerTypeAdapter(QuantizedItem.class, new Deserialization.QuantizedItemDeserializer())
                 // Admin
                 .registerTypeAdapter(Admin.class, new Serialization.AdminSerializer())
                 .registerTypeAdapter(Admin.class, new Deserialization.AdminDeserializer())

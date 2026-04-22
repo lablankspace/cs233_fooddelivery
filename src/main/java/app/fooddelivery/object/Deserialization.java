@@ -47,6 +47,14 @@ public class Deserialization {
             return new Order(id,customerId);
         }
     }
+    public static class QuantizedItemDeserializer implements JsonDeserializer<QuantizedItem> {
+
+        @Override
+        public QuantizedItem deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject object = json.getAsJsonObject();
+            return new QuantizedItem(UUID.fromString(object.get("itemId").getAsString()),object.get("quantity").getAsInt());
+        }
+    }
     public static class AdminDeserializer implements JsonDeserializer<Admin> {
 
         @Override

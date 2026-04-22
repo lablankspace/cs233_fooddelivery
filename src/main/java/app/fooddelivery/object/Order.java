@@ -34,7 +34,7 @@ public class Order{
     }
     public void removeItem(Item item){
         for (QuantizedItem quantizedItem : items){
-            if (quantizedItem.item.getId().equals(item)){
+            if (quantizedItem.getItemId().equals(item)){
                 items.remove(quantizedItem);
                 return;
             }
