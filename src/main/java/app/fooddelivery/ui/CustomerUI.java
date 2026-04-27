@@ -8,8 +8,8 @@ import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.terminal.Terminal;
 
 import app.fooddelivery.object.Customer;
+import app.fooddelivery.object.Menu;
 import app.fooddelivery.service.Restaurant;
-import app.fooddelivery.ui.Select2D;
 
 
 public class CustomerUI {
@@ -64,14 +64,17 @@ public class CustomerUI {
             Utils.Title(screenSize, text);
             Utils.subTitle(screenSize, text, "PLACE ORDER", 1);
                   
-            Select2D selection = new Select2D(0,0);
-            String[][] options = {{"Place Order", "View Order History"},{"Rate Order", "Exit"}};
-            Utils.selection2D(selection, options, screenSize, text, 3);
+            int selection = 0;
+            //String[] items = restaurant.getMenu();  //TODO FIND SOME WAY TO GET THE MENU WITHOUT PASSING RESTAURANT
+            String[] options = {"Burgers   $12.00", "Pizza   $6.00","Salad $4.50"};
+            int[] quantity = {0,0,0};
+            Utils.selection(selection, options, screenSize, text, 3);
             OUTER:
                 while (true) {
                 KeyStroke key = terminal.readInput();
-                selection = Utils.changeSelection2D(selection, key, options.length, options[0].length);
-                Utils.selection2D(selection, options, screenSize, text, 3);
+                quantity = Utils.changeAmount(selection, key, quantity);
+                selection = Utils.changeSelection(selection, key, options.length);
+                Utils.amount(selection, options, quantity, screenSize, text, 3);
                /* if (key.getKeyType() == KeyType.Enter) {
                     switch (selection) {
                         case 0:

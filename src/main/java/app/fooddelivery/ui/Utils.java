@@ -54,59 +54,23 @@ public class Utils {
                         text.putString(x, y + i, line);
                 }
        }
-        public static void selection2D(Select2D selection, String[][] options, TerminalSize screenSize, TextGraphics text, int y) {
-                int rows = options.length;
-                for (int row = 0; row < rows; row++) {
-                        int currentX = screenSize.getColumns() / 2;
-                        int totalWidth = 0;
-                        for (int col = 0; col < options[row].length; col++) {
-                                totalWidth += options[row][col].length() + 3;
-                        }
-                        currentX -= totalWidth / 2;
-                        for (int col = 0; col < options[row].length; col++) {
-
-                                boolean isSelected = (row == selection.y && col == selection.x);
-
-                                if (isSelected) {
-                                        text.setBackgroundColor(TextColor.ANSI.RED);
-                                } else {
-                                        text.setBackgroundColor(TextColor.ANSI.DEFAULT);
-                                }
-
-                                String value = options[row][col];
-                                text.putString(currentX, y + row, value);
-
-                                currentX += value.length() + 3;
-                        }
+        public static void amount(int selection, String[] options, int[] quantity, TerminalSize screenSize, TextGraphics text, int y) {
+                for (int i = 0; i < options.length; i++) {
+                        String prefix = (i == selection) ? "> " : "  ";
+                        String line = prefix + options[i];
+                        line += " - " + quantity[i] + " +";
+                        text.putString(0, y + i, " ".repeat(screenSize.getColumns()));
+                        int x = screenSize.getColumns() / 2 - line.length() / 2;
+                        text.putString(x, y + i, line);
                 }
         }
-        public static Select2D changeSelection2D(Select2D selection, KeyStroke key, int width, int height) {
-                if ( key.getKeyType() == KeyType.ArrowDown ) {
-                        selection.y++;
-                }
-                if ( key.getKeyType() == KeyType.ArrowUp ) { 
-                        selection.y--;
-                }
-                if (selection.y < 0) {
-                        selection.y = height - 1;
-                }
-                if (selection.y >= height) {
-                        selection.y = 0;
-                }
+        public static int[] changeAmount(int selection, KeyStroke key, int[] quantity) {
                 if ( key.getKeyType() == KeyType.ArrowRight ) {
-                        selection.x++;
+                        quantity[selection]++;
                 }
-                if ( key.getKeyType() == KeyType.ArrowLeft ) { 
-                        selection.x--;
+                if ( key.getKeyType() == KeyType.ArrowUp && quantity[selection] != 0) { 
+                        quantity[selection]--;
                 }
-                if (selection.x < 0) {
-                        selection.x = width - 1;
-                        selection.y--;
-                }
-                if (selection.x >= width) {
-                        selection.x = 0;
-                        selection.y++;
-                }
-        return selection;
+        return quantity;
         }
 }

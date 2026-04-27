@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Set;
 
+import app.fooddelivery.object.Menu;
 import app.fooddelivery.object.Admin;
 import app.fooddelivery.object.Customer;
 import app.fooddelivery.object.Driver;
@@ -94,5 +95,8 @@ public class Restaurant {
             }
         }
         return false;
+    }
+    public Menu getMenu() {
+        return state.menu;
     }
 }
