@@ -42,22 +42,8 @@ public class Login {
                     OUTER:
                     while (true) {
                         KeyStroke key = terminal.readInput();
-                        if ( key.getKeyType() == KeyType.ArrowDown ) {
-                            selection++;
-                            Utils.selection(selection, options, screenSize, text, 3);
-                        }
-                        if ( key.getKeyType() == KeyType.ArrowUp ) { 
-                            selection--;
-                            Utils.selection(selection, options, screenSize, text, 3);
-                        }
-                        if (selection < 0) {
-                            selection = options.length - 1;
-                            Utils.selection(selection, options, screenSize, text, 3);
-                        }
-                        if (selection >= options.length) {
-                            selection = 0;
-                            Utils.selection(selection, options, screenSize, text, 3);
-                        }
+                        selection = Utils.changeSelection(selection, key, options.length);
+                        Utils.selection(selection, options, screenSize, text, 3);
                         if (key.getKeyType() == KeyType.Enter) {
                             switch (selection) {
                                 case 0:
@@ -65,20 +51,21 @@ public class Login {
                                     break;
                                 case 1:
                                     //Add a login / dashboard call here
-                                    switch (LoginProcess.checkLogin(restaurant, user.toString(), pass.toString())) {
+                                    CustomerUI.home(terminal, null);
+                        /*          switch (LoginProcess.checkLogin(restaurant, user.toString(), pass.toString())) {
                                         case 0:
-                                            Home.admin(restaurant, (Admin) LoginProcess.getUser(restaurant, user.toString()));
+                                            Home.admin(terminal, restaurant, (Admin) LoginProcess.getUser(restaurant, user.toString()));
                                             break OUTER;
                                         case 1:
-                                            Home.driver(restaurant, (Driver) LoginProcess.getUser(restaurant, user.toString()));
+                                            Home.driver(terminal, restaurant, (Driver) LoginProcess.getUser(restaurant, user.toString()));
                                             break OUTER;
                                         case 2:
-                                            Home.customer(restaurant, (Customer) LoginProcess.getUser(restaurant, user.toString()));
+                                            Home.customer(terminal, restaurant, (Customer) LoginProcess.getUser(restaurant, user.toString()));
                                             break OUTER;
                                         case 3:
                                             Utils.subTitle(screenSize, text, "INCORRECT LOGIN PLEASE TRY AGAIN", 2);
                                             break;
-                                    }
+                                    } */
                                     break;
                                 case 2:
                                     break OUTER;
