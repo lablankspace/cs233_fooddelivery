@@ -1,100 +1,35 @@
 package app.fooddelivery.ui;
 
-import com.googlecode.lanterna.TerminalSize;
-import com.googlecode.lanterna.TextColor;
-import com.googlecode.lanterna.graphics.TextGraphics;
-import com.googlecode.lanterna.input.KeyStroke;
-import com.googlecode.lanterna.input.KeyType;
-import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
-import com.googlecode.lanterna.terminal.Terminal;
+import java.util.ArrayList;
+import java.util.List;
 
-import app.fooddelivery.object.Admin;
-import app.fooddelivery.object.Customer;
-import app.fooddelivery.object.Driver;
-import app.fooddelivery.service.LoginProcess;
 import app.fooddelivery.service.Restaurant;
+import app.fooddelivery.ui.Utils.Term;
 
 
 
 public class Login {
-        public static void run(Restaurant restaurant) {
-                DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
-                Terminal terminal = null;
-                try {
-                        terminal = defaultTerminalFactory.createTerminal();
-                        TerminalSize screenSize = terminal.getTerminalSize();
-                        terminal.clearScreen();
-
-                        final TextGraphics text = terminal.newTextGraphics();
-                        text.setForegroundColor(TextColor.ANSI.GREEN);
-
-                        Utils.Title(screenSize, text);
-                        Utils.subTitle(screenSize, text, "PLEASE LOGIN", 1);
+        public static void run(Term term, Restaurant restaurant) {
+            Utils.exitCondition none = new Utils.exitCondition();
+            term.clear();
                         
-                        int selection = 0;
-                        String[] options = {"Username: ", "Password: ", "Exit"};
-                        Utils.selection(selection, options, screenSize, text, 3);
-
-                        terminal.flush();
-                        StringBuilder user = new StringBuilder();
-                        StringBuilder pass = new StringBuilder();
-
-                    OUTER:
-                    while (true) {
-                        KeyStroke key = terminal.readInput();
-                        selection = Utils.changeSelection(selection, key, options.length);
-                        Utils.selection(selection, options, screenSize, text, 3);
-                        if (key.getKeyType() == KeyType.Enter) {
-                            switch (selection) {
-                                case 0:
-                                    selection = 1;
-                                    break;
-                                case 1:
-                                    //Add a login / dashboard call here
-                                    CustomerUI.home(terminal, null);
-                        /*          switch (LoginProcess.checkLogin(restaurant, user.toString(), pass.toString())) {
-                                        case 0:
-                                            Home.admin(terminal, restaurant, (Admin) LoginProcess.getUser(restaurant, user.toString()));
-                                            break OUTER;
-                                        case 1:
-                                            Home.driver(terminal, restaurant, (Driver) LoginProcess.getUser(restaurant, user.toString()));
-                                            break OUTER;
-                                        case 2:
-                                            Home.customer(terminal, restaurant, (Customer) LoginProcess.getUser(restaurant, user.toString()));
-                                            break OUTER;
-                                        case 3:
-                                            Utils.subTitle(screenSize, text, "INCORRECT LOGIN PLEASE TRY AGAIN", 2);
-                                            break;
-                                    } */
-                                    break;
-                                case 2:
-                                    break OUTER;
-                                default:
-                                    break;
-                            }
-                        }
-                        if ( key.getKeyType() == KeyType.Backspace) { 
-                                if ( selection == 0 && user.length() > 0 ) { 
-                                        user.deleteCharAt( user.length() - 1 ); 
-                                } 
-                                if ( selection == 1 && pass.length() > 0 ) { 
-                                        pass.deleteCharAt( pass.length() - 1 ); 
-                                }
-                        }
-                        if ( key.getKeyType() == KeyType.Character) {
-                            if (selection == 0 ) user.append(key.getCharacter());
-                            if (selection == 1 ) pass.append(key.getCharacter());
-                        }
-                        String[] labels = {options[0], options[1]};
-                        String[] inputs = {user.toString(), pass.toString()};
-                        boolean[] hidden = {false, true};
+            List<Utils.Line> title = new ArrayList<>(List.of(
+                new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
+                new Utils.Text("PLEASE LOGIN")      
+            ));
                         
-                        Utils.input(selection, labels, inputs, screenSize, text, 3, hidden);
-                        terminal.flush();
-                    }
-                        Thread.sleep(200);
-                } catch(Exception e) {
-                        e.printStackTrace();
-                } 
-        }
+            int selection = 0;
+                        
+            List<Utils.Line> lines = new ArrayList<>(List.of(
+                new Utils.Input("Username", false),
+                new Utils.Input("Password", true),
+                new Utils.Button("Login", () -> {
+                    CustomerUI.home(term, null);
+                }),
+                new Utils.Button("Exit", () -> {
+                    System.exit(0);
+                })
+            ));
+            Utils.loop(title, lines, term, 0, 3, none);
+    }
 }

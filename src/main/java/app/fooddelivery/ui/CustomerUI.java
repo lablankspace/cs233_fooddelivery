@@ -1,102 +1,67 @@
 package app.fooddelivery.ui;
 
-import com.googlecode.lanterna.TerminalSize;
-import com.googlecode.lanterna.TextColor;
-import com.googlecode.lanterna.graphics.TextGraphics;
-import com.googlecode.lanterna.input.KeyType;
-import com.googlecode.lanterna.input.KeyStroke;
-import com.googlecode.lanterna.terminal.Terminal;
+import java.util.ArrayList;
+import java.util.List;
 
 import app.fooddelivery.object.Customer;
-import app.fooddelivery.object.Menu;
-import app.fooddelivery.service.Restaurant;
-
+import app.fooddelivery.ui.Utils.Term;
+import app.fooddelivery.ui.Utils.exitCondition;
 
 public class CustomerUI {
-    public static void home(Terminal terminal, Customer customer) {
-        try {
-            TerminalSize screenSize = terminal.getTerminalSize();
-            terminal.clearScreen();
-            final TextGraphics text = terminal.newTextGraphics();
-            text.setForegroundColor(TextColor.ANSI.GREEN);
-            Utils.Title(screenSize, text);
-            Utils.subTitle(screenSize, text, "CUSTOMER", 1);
-                  
-            int selection = 0;
-            String[] options = {"Place Order", "View Order History", "Rate Order", "Exit"};
-            Utils.selection(selection, options, screenSize, text, 3);
-            OUTER:
-                while (true) {
-                KeyStroke key = terminal.readInput();
-                selection = Utils.changeSelection(selection, key, options.length);
-                Utils.selection(selection, options, screenSize, text, 3);
-                if (key.getKeyType() == KeyType.Enter) {
-                    switch (selection) {
-                        case 0:
-                            terminal.clearScreen();
-                            placeOrder(terminal, customer); 
-                            break;
-                        case 1:
-                            // TODO: IMPLEMENT VIEW ORDER HISTORY
-                            break;
-                        case 2:
-                            // TODO: IMPLEMENT RATE ORDER
-                            break;
-                        case 3:
-                            terminal.clearScreen();
-                            break OUTER;
-                        default: 
-                            break;
-                    }
-                }
-                terminal.flush();
-            }
-        } catch(Exception e) {
-                        e.printStackTrace();
-                }
+    public static void home(Term term, Customer customer) {
+        exitCondition active = new exitCondition();
+        term.clear();
+        List<Utils.Line> title = new ArrayList<>(List.of(
+            new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
+            new Utils.Text("WELCOME" + " Sage") //customer.getName())      
+        ));
+        
+        int selection = 0;
+        
+        List<Utils.Line> lines = new ArrayList<>(List.of(
+            new Utils.Button("Place Order", () -> {
+                placeOrder(term);
+            }),
+            new Utils.Button("View Order History", () -> {
+                viewOrderHistory();
+            }),
+            new Utils.Button("Rate Order", () -> {
+                rateOrder();
+            }),
+            new Utils.Button("Exit", () -> {
+                active.condition = false;
+            })
+        ));
+            Utils.loop(title, lines, term, 0, 3, active);
     }
-    public static void placeOrder(Terminal terminal, Customer customer) {
-        try {
-            TerminalSize screenSize = terminal.getTerminalSize();
-            terminal.clearScreen();
-            final TextGraphics text = terminal.newTextGraphics();
-            text.setForegroundColor(TextColor.ANSI.GREEN);
-            Utils.Title(screenSize, text);
-            Utils.subTitle(screenSize, text, "PLACE ORDER", 1);
-                  
-            int selection = 0;
-            //String[] items = restaurant.getMenu();  //TODO FIND SOME WAY TO GET THE MENU WITHOUT PASSING RESTAURANT
-            String[] options = {"Burgers   $12.00", "Pizza   $6.00","Salad $4.50"};
-            int[] quantity = {0,0,0};
-            Utils.selection(selection, options, screenSize, text, 3);
-            OUTER:
-                while (true) {
-                KeyStroke key = terminal.readInput();
-                quantity = Utils.changeAmount(selection, key, quantity);
-                selection = Utils.changeSelection(selection, key, options.length);
-                Utils.amount(selection, options, quantity, screenSize, text, 3);
-               /* if (key.getKeyType() == KeyType.Enter) {
-                    switch (selection) {
-                        case 0:
-                            // TODO: IMPLEMENT PLACE ORDER 
-                            break;
-                        case 1:
-                            // TODO: IMPLEMENT VIEW ORDER HISTORY
-                            break;
-                        case 2:
-                            // TODO: IMPLEMENT RATE ORDER
-                            break;
-                        case 3:
-                            terminal.clearScreen();
-                            break OUTER;
-                        default: 
-                            break;
-                    } 
-                } */
-                terminal.flush();
-            }
-        } catch(Exception e) {
-                        e.printStackTrace();
-                }
+    public static void placeOrder(Term term) {
+        exitCondition active = new exitCondition();
+        term.clear();
+
+        List<Utils.Line> title = new ArrayList<>(List.of(
+            new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
+            new Utils.Text("Placing New Order for" + " Sage") //customer.getName())      
+        ));
+
+        int selection = 0;
+
+        List<Utils.Line> lines = new ArrayList<>(List.of(
+            new Utils.Amount("Burgers  $12.00"),
+            new Utils.Amount("Pizza    $10.00"),
+            new Utils.Button("Place Order", () -> {
+                // Send Order to Queue or something
+            }),
+            new Utils.Button("Exit", () -> {
+                active.condition = false;
+            })
+        ));
+        
+        Utils.loop(title, lines, term, 0, 3, active);
+    }
+    public static void viewOrderHistory() {
+        
+    }
+    public static void rateOrder() {
+
     }
 }

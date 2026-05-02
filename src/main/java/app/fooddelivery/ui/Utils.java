@@ -1,76 +1,190 @@
 package app.fooddelivery.ui;
 
-import com.googlecode.lanterna.SGR;
+import java.util.List;
+
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
-
+import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
+import com.googlecode.lanterna.terminal.Terminal;
 
 public class Utils {
-        public static void Title(TerminalSize screenSize, TextGraphics text){
-                String output = "ISLAND GIRLS DELIVERY SERVICE";
-                text.putString(screenSize.getColumns() / 2 - output.length() / 2, 0, output, SGR.BOLD);
-        } 
-        public static void subTitle(TerminalSize screenSize, TextGraphics text, String output, int y){
-                text.putString(screenSize.getColumns() / 2 - output.length() / 2, y, output, SGR.BOLD);
+        interface Line {
+                String render(boolean selected);
+                void onKey(KeyStroke key);
         }
-        public static void selection(int selection, String[] options, TerminalSize screenSize, TextGraphics text, int y) {
-                for (int i = 0; i < options.length; i++) {
-                        String prefix = (i == selection) ? "> " : "  ";
-                        String line = prefix + options[i];
-                        text.putString(0, y + i, " ".repeat(screenSize.getColumns()));
-                        int x = screenSize.getColumns() / 2 - line.length() / 2;
-                        text.putString(x, y + i, line);
-                }
+        interface Action {
+                void run();
         }
-        public static int changeSelection(int selection, KeyStroke key, int optionsLength) {
-                if ( key.getKeyType() == KeyType.ArrowDown ) {
-                        selection++;
-                }
-                if ( key.getKeyType() == KeyType.ArrowUp ) { 
-                        selection--;
-                }
-                if (selection < 0) {
-                        selection = optionsLength - 1;
-                }
-                if (selection >= optionsLength) {
-                        selection = 0;
-                }
-        return selection;
+        public static class exitCondition {
+                boolean condition = true;
         }
-        public static void input(int selection, String[] options, String[] inputs, TerminalSize screenSize, TextGraphics text, int y, boolean[] hidden) {
-                for (int i = 0; i < options.length; i++) {
-                        String prefix = (i == selection) ? "> " : "  ";
-                        String line = prefix + options[i];
-                        if ( !hidden[i] ) line += " " + inputs[i];
-                        else {
-                        String mask = "*".repeat(inputs[i].length());
-                        line += " " + mask ;
+        public static class Term {
+                private Terminal terminal;
+                private TextGraphics text;
+                private TerminalSize size;
+
+                public Term() {
+                        DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
+                        try {
+                        this.terminal = defaultTerminalFactory.createTerminal();
+                        this.size = terminal.getTerminalSize();
+                        text = terminal.newTextGraphics().setForegroundColor(TextColor.ANSI.GREEN);
+                        } catch (Exception e) {
+                                throw new RuntimeException(e);
                         }
-                        text.putString(0, y + i, " ".repeat(screenSize.getColumns()));
-                        int x = screenSize.getColumns() / 2 - line.length() / 2;
-                        text.putString(x, y + i, line);
                 }
-       }
-        public static void amount(int selection, String[] options, int[] quantity, TerminalSize screenSize, TextGraphics text, int y) {
-                for (int i = 0; i < options.length; i++) {
-                        String prefix = (i == selection) ? "> " : "  ";
-                        String line = prefix + options[i];
-                        line += " - " + quantity[i] + " +";
-                        text.putString(0, y + i, " ".repeat(screenSize.getColumns()));
-                        int x = screenSize.getColumns() / 2 - line.length() / 2;
-                        text.putString(x, y + i, line);
+                public Terminal terminal() {
+                        return terminal;
+                }
+                public TextGraphics text() {
+                        return text;
+                }
+                public TerminalSize size() {
+                        return size;
+                }
+                public KeyStroke readKey() {
+                        try {
+                                return terminal.readInput();
+                        } catch (Exception e) {
+                                throw new RuntimeException(e);
+                        }
+                }
+
+                public void flush() {
+                        try {
+                                terminal.flush();
+                        } catch (Exception e) {
+                        throw new RuntimeException(e);
+                        }
+                }
+                public void clear() {
+                        try {
+                                terminal.clearScreen();
+                        } catch (Exception e) {
+                        throw new RuntimeException(e);
+                        }
+                }
+
+        }
+        public static class Text implements Line {
+                private String label;
+
+                Text(String label) {
+                        this.label = label;
+                }
+
+                public String render(boolean selected) {
+                        return label;
+                }
+
+                public void onKey(KeyStroke key) {}
+        }
+        public static class Button implements Line {
+                private String label;
+                private Action action;
+                Button(String label, Action action) {
+                        this.label = label;
+                        this.action = action;
+                }
+
+                public String render(boolean selected) {
+                        return (selected ? "> " : " ") + label;
+                }
+                
+                public void onKey(KeyStroke key) {
+                        if (key.getKeyType() == KeyType.Enter) {
+                                action.run();
+                        }
                 }
         }
-        public static int[] changeAmount(int selection, KeyStroke key, int[] quantity) {
-                if ( key.getKeyType() == KeyType.ArrowRight ) {
-                        quantity[selection]++;
+        public static class Amount implements Line {
+                private String label;
+                private int quantity;
+
+                Amount(String label) {
+                        this.label = label;
+                        this.quantity = 0;
                 }
-                if ( key.getKeyType() == KeyType.ArrowUp && quantity[selection] != 0) { 
-                        quantity[selection]--;
+
+                public String render(boolean selected) {
+                        return (selected ? "> " : " ") + label + " - " + quantity + " + ";
                 }
-        return quantity;
+
+                public void onKey(KeyStroke key) {
+                        if ( key.getKeyType() == KeyType.ArrowRight ) {
+                                quantity++;
+                        }
+                        if ( key.getKeyType() == KeyType.ArrowLeft && quantity > 0) { 
+                                quantity--;
+                        }
+                }
+        }
+
+        public static class Input implements Line {
+                private String label;
+                String value ="";
+                boolean hidden;
+
+                Input(String label, boolean hidden) {
+                        this.label = label;
+                        this.hidden = hidden;
+                }
+
+                public String render(boolean selected) {
+                        String display = hidden ? "*".repeat(value.length()) : value;
+                        return (selected ? "> " : " ") + label + " " + display;
+                }
+
+                public void onKey(KeyStroke key) {
+                        if (key.getKeyType() == KeyType.Character) {
+                                value += key.getCharacter();
+                        }
+                        if (key.getKeyType() == KeyType.Backspace && value.length() > 0) {
+                                value = value.substring(0, value.length() - 1);
+                        }
+                }
+        }
+        public static void render(List<Line> lines, int selection, TerminalSize screenSize, TextGraphics text, int y) {
+                for (int i = 0; i < lines.size(); i++) {
+                        String line = lines.get(i).render(i == selection);
+                        
+                        text.putString(0, y + i, " ".repeat(screenSize.getColumns()));
+                        int x = screenSize.getColumns() / 2 - line.length() / 2;
+                        text.putString(x, y + i, line);
+                } 
+        }
+        public static int keyPress(int selection, KeyStroke key, List<Line> lines) {
+                if (key.getKeyType() == KeyType.ArrowDown) selection++;
+                else if (key.getKeyType() == KeyType.ArrowUp) selection--;
+                else if (key.getKeyType() == KeyType.Enter && (lines.get(selection) instanceof Utils.Input || lines.get(selection) instanceof Utils.Amount)) selection++;
+                else  { lines.get(selection).onKey(key);} 
+                
+                if (selection < 0) selection = lines.size() - 1;
+                if (selection >= lines.size()) selection = 0;
+
+
+                return selection;
+        }
+        public static void loop(List<Line> title, List<Line> lines, Term term, int titleY, int linesY, exitCondition active) {
+                int selection = 0;
+
+                render(title, -1, term.size(), term.text(), titleY);
+                render(lines, selection, term.size(), term.text(), linesY);
+
+                term.flush();
+
+                while (active.condition) {
+                        KeyStroke key = term.readKey();
+
+                        selection = keyPress(selection, key, lines);
+
+                        render(title, -1, term.size(), term.text(), titleY);
+                        render(lines, selection, term.size(), term.text(), linesY);
+
+                        term.flush();
+                }
         }
 }
