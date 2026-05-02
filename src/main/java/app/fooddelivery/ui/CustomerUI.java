@@ -13,7 +13,7 @@ public class CustomerUI {
         term.clear();
         List<Utils.Line> title = new ArrayList<>(List.of(
             new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-            new Utils.Text("WELCOME" + " Sage") //customer.getName())      
+            new Utils.Text("WELCOME " + customer.getName())      
         ));
         
         int selection = 0;

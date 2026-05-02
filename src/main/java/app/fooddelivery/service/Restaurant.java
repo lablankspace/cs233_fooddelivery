@@ -2,15 +2,15 @@ package app.fooddelivery.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.Set;
+import java.util.UUID;
 
-import app.fooddelivery.object.Menu;
 import app.fooddelivery.object.Admin;
 import app.fooddelivery.object.Customer;
 import app.fooddelivery.object.Driver;
-import app.fooddelivery.object.User;
+import app.fooddelivery.object.Menu;
 import app.fooddelivery.object.State;
+import app.fooddelivery.object.User;
 
 
 
@@ -26,13 +26,13 @@ public class Restaurant {
             if (!isNameTaken(u.getName(), state.users) && (!isIdTaken(u.getId(), state.users))) {
                 switch (u.getRole()) {
                     case "Admin":
-                      //  users.add(new Admin(u));
+                        state.users.add(new Admin(u));
                         break;
                     case "Driver":
-                        //users.add(new Driver(u));
+                        state.users.add(new Driver(u));
                         break;
                     default:
-                        //users.add(new Customer(u));
+                        state.users.add(new Customer(u));
                         break;
                 }
             }
@@ -79,6 +79,13 @@ public class Restaurant {
             customers.add(new Customer(u));
         }
         return customers;
+    }
+    public Customer getCustomer(String name) {
+        List<Customer> customers = getCustomers();
+        for ( Customer c : customers) {
+            if (c.getName().equals(name)) return c;
+        }
+        return null;
     }
     public static boolean isNameTaken(String name, Set<? extends User> users) {
         for (User u : users) {

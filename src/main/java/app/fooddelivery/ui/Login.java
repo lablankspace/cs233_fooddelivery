@@ -19,17 +19,27 @@ public class Login {
             ));
                         
             int selection = 0;
-                        
+
+
+            Utils.Input username = new Utils.Input("Username", false);
+            Utils.Input password = new Utils.Input("Password", true);
+
             List<Utils.Line> lines = new ArrayList<>(List.of(
-                new Utils.Input("Username", false),
-                new Utils.Input("Password", true),
+                username,
+                password,
                 new Utils.Button("Login", () -> {
-                    CustomerUI.home(term, null);
+                    if (restaurant.getCustomer(username.getInput()).checkPassword(password.getInput())) {
+                    CustomerUI.home(term, restaurant.getCustomer(username.getInput()));
+                    }
+                    else {
+                        title.add(new Utils.Text("Invalid Login: Please try again"));
+                    }
                 }),
                 new Utils.Button("Exit", () -> {
                     System.exit(0);
                 })
-            ));
+                ));
+
             Utils.loop(title, lines, term, 0, 3, none);
     }
 }

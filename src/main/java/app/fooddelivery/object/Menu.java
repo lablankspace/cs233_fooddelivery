@@ -1,9 +1,8 @@
 package app.fooddelivery.object;
 
-import java.util.HashSet;
 import java.util.HashMap;
 
-public class Menu { // check discord
+public class Menu {
     private HashMap<Item, Double> items;
     Menu() {
         items = new HashMap<>();

@@ -125,8 +125,8 @@ public class Utils {
 
         public static class Input implements Line {
                 private String label;
-                String value ="";
-                boolean hidden;
+                private String value ="";
+                private boolean hidden;
 
                 Input(String label, boolean hidden) {
                         this.label = label;
@@ -145,6 +145,9 @@ public class Utils {
                         if (key.getKeyType() == KeyType.Backspace && value.length() > 0) {
                                 value = value.substring(0, value.length() - 1);
                         }
+                }
+                public String getInput() {
+                        return value;
                 }
         }
         public static void render(List<Line> lines, int selection, TerminalSize screenSize, TextGraphics text, int y) {

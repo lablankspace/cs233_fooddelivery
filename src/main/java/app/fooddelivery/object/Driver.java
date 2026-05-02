@@ -16,6 +16,11 @@ public class Driver extends User {
     public Driver(String name) {
         this(name,UUID.randomUUID());
     }
+    public Driver(User u) { 
+        super(u.getName(), u.getId(), u.getPasswordHash()); 
+        orders = new ArrayList<>();
+        ratings = new ArrayList<>();
+        }
 
     protected Driver(String name, UUID id, byte[] phashes) {
         super(name,id,phashes);
