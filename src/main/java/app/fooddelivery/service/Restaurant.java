@@ -21,7 +21,7 @@ public class Restaurant {
         this.state = state;
     }
 
-    public void addUser(User u, String password) {
+    public void addUser(User u) {
         if (!state.users.contains(u)) {
             if (!isNameTaken(u.getName(), state.users) && (!isIdTaken(u.getId(), state.users))) {
                 switch (u.getRole()) {

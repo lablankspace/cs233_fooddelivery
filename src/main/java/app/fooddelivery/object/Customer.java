@@ -41,7 +41,10 @@ public class Customer extends User {
     public String viewOrderStatus(Order order) {
         return "TODO";
     }
-    public String viewOrderHistory() {
-        return "TODO";
+    public ArrayList<Order> getOrderHistory() {
+        return orderHistory;
+    }
+    public void addOrder(Order order) {
+        orderHistory.add(order);
     }
 }

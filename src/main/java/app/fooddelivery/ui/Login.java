@@ -29,7 +29,7 @@ public class Login {
                 password,
                 new Utils.Button("Login", () -> {
                     if (restaurant.getCustomer(username.getInput()).checkPassword(password.getInput())) {
-                    CustomerUI.home(term, restaurant.getCustomer(username.getInput()));
+                    CustomerUI.home(term, restaurant, restaurant.getCustomer(username.getInput()));
                     }
                     else {
                         title.add(new Utils.Text("Invalid Login: Please try again"));
@@ -40,6 +40,6 @@ public class Login {
                 })
                 ));
 
-            Utils.loop(title, lines, term, 0, 3, none);
+            Utils.loop(title, lines, term, none);
     }
 }

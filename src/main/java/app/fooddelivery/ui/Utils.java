@@ -171,11 +171,11 @@ public class Utils {
 
                 return selection;
         }
-        public static void loop(List<Line> title, List<Line> lines, Term term, int titleY, int linesY, exitCondition active) {
+        public static void loop(List<Line> title, List<Line> lines, Term term, exitCondition active) {
                 int selection = 0;
 
-                render(title, -1, term.size(), term.text(), titleY);
-                render(lines, selection, term.size(), term.text(), linesY);
+                render(title, -1, term.size(), term.text(), 0);
+                render(lines, selection, term.size(), term.text(), 3);
 
                 term.flush();
 
@@ -184,8 +184,8 @@ public class Utils {
 
                         selection = keyPress(selection, key, lines);
 
-                        render(title, -1, term.size(), term.text(), titleY);
-                        render(lines, selection, term.size(), term.text(), linesY);
+                        render(title, -1, term.size(), term.text(), 0);
+                        render(lines, selection, term.size(), term.text(), 3);
 
                         term.flush();
                 }

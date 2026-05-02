@@ -7,14 +7,14 @@ public class Menu {
     Menu() {
         items = new HashMap<>();
     }
-    private void addItem(Item item, double price) {
-        items.put(item, price);
+    public void addItem(Item item) {
+        items.put(item, item.getPrice());
     }
-    private void removeItem(Item item) {
+    public void removeItem(Item item) {
         items.remove(item);
     }
-    private HashMap getMenu() {
-        return items;
+    public HashMap<Item, Double> getHash() {
+        return new HashMap<>(items);
     }
     public String[] getItems() {
         String[] result = new String[items.size()];
@@ -22,6 +22,10 @@ public class Menu {
             result = items.keySet().toArray(new String[0]);
         }
         return result;
+    }
+
+    public Double getPrice(Item item) {
+        return items.get(item);
     }
     // TODO: Change to return a array of items from the set
     // private String getMenu() {
