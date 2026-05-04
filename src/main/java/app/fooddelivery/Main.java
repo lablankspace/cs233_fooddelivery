@@ -23,6 +23,8 @@ public class Main {
         restaurant.addUser(c);
         
         Item burger = new Item("Burger", "A thing that Burgs", 12.50);
+        Item fries = new Item("Fries", "A thing that lies about being french", 5.00);
+        restaurant.getMenu().addItem(fries);
         restaurant.getMenu().addItem(burger);
         
         Order order = new Order(c);

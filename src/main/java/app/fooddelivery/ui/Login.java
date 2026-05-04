@@ -28,9 +28,14 @@ public class Login {
                 username,
                 password,
                 new Utils.Button("Login", () -> {
-                    if (restaurant.getCustomer(username.getInput()).checkPassword(password.getInput())) {
-                    CustomerUI.home(term, restaurant, restaurant.getCustomer(username.getInput()));
-                    }
+                    if (restaurant.getCustomer(username.getInput()) != null ) {
+                        if (restaurant.getCustomer(username.getInput()).checkPassword(password.getInput())) {
+                            CustomerUI.home(term, restaurant, restaurant.getCustomer(username.getInput()));
+                        }
+                        else {
+                            title.add(new Utils.Text("Invalid Login: Please try again"));
+                        } 
+                    } 
                     else {
                         title.add(new Utils.Text("Invalid Login: Please try again"));
                     }

@@ -35,7 +35,7 @@ public class Customer extends User {
         if (rating < 1 || rating > 5) {
             throw new IllegalArgumentException("Rating must be between 1 and 5");
         }
-        UserRating rate = new UserRating(this,rating);
+        Rating rate = new Rating(this,rating);
         driver.addRate(rate);
     }
     public String viewOrderStatus(Order order) {

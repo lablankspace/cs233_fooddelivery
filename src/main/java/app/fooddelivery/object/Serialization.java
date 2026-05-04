@@ -90,10 +90,10 @@ public class Serialization {
             return obj;
         }
     }
-    public static class UserRatingSerializer implements JsonSerializer<UserRating> {
+    public static class UserRatingSerializer implements JsonSerializer<Rating> {
 
         @Override
-        public JsonElement serialize(UserRating userRating, Type typeOfSrc, JsonSerializationContext context) {
+        public JsonElement serialize(Rating userRating, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject obj = new JsonObject();
 
             obj.addProperty("score",userRating.getScore());

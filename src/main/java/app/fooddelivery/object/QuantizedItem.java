@@ -6,7 +6,7 @@ public class QuantizedItem {
     private Item item;
     private final UUID itemId;
     private final int quantity;
-    QuantizedItem(Item item,int quantity){
+    public QuantizedItem(Item item,int quantity){
         this.item = item;
         this.itemId = item.getId();
         this.quantity = quantity;

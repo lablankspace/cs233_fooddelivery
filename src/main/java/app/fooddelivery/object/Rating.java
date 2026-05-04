@@ -4,24 +4,24 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-public class UserRating {
-    private double score;
+public class Rating {
+    private int score;
     private String timestamp;
     private UUID creatorId;
-    protected UserRating(UUID creatorId, double score, String timestamp) {
+    protected Rating(UUID creatorId, int score, String timestamp) {
         this.score = score;
         this.creatorId = creatorId;
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         timestamp = now.format(formatter);
     }
-    protected UserRating(UUID creatorId, double score) {
+    protected Rating(UUID creatorId, int score) {
         this(creatorId, score, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     }
-    protected UserRating(Customer from, double score) {
+    public Rating(Customer from, int score) {
         this(from.getId(), score);
     }
-    public double getScore() {
+    public int getScore() {
         return score;
     }
     public String getTimeStamp() {

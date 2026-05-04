@@ -6,7 +6,7 @@ import java.util.UUID;
 public class Driver extends User {
     private Status status;
     private final ArrayList<Order> orders;
-    final protected ArrayList<UserRating> ratings;
+    final protected ArrayList<Rating> ratings;
     protected Driver(String name, UUID id) {
         super(name,id.toString());
         this.status = Status.FREE;
@@ -51,13 +51,13 @@ public class Driver extends User {
     }
     public double averageRate() {
         double avg = 0;
-        for (UserRating rate : ratings) {
+        for (Rating rate : ratings) {
             avg += rate.getScore();
         }
         return avg / ratings.size();
 
     }
-    public void addRate(UserRating rate) {
+    public void addRate(Rating rate) {
         ratings.add(rate);
     }
     @Override

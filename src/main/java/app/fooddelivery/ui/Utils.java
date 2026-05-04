@@ -103,10 +103,20 @@ public class Utils {
         public static class Amount implements Line {
                 private String label;
                 private int quantity;
+                final int min;
+                final int max;
 
                 Amount(String label) {
                         this.label = label;
-                        this.quantity = 0;
+                        this.min = 0;
+                        this.max = 100;
+                        this.quantity = this.min;
+                }
+                Amount(String label, int min, int max) {
+                        this.label = label;
+                        this.quantity = min;
+                        this.min = min;
+                        this.max = max;
                 }
 
                 public String render(boolean selected) {
@@ -114,12 +124,16 @@ public class Utils {
                 }
 
                 public void onKey(KeyStroke key) {
-                        if ( key.getKeyType() == KeyType.ArrowRight ) {
+                        if ( key.getKeyType() == KeyType.ArrowRight && quantity < max) {
                                 quantity++;
                         }
-                        if ( key.getKeyType() == KeyType.ArrowLeft && quantity > 0) { 
+                        if ( key.getKeyType() == KeyType.ArrowLeft && quantity > min) { 
                                 quantity--;
                         }
+                }
+
+                public int quantity() {
+                        return quantity;
                 }
         }
 

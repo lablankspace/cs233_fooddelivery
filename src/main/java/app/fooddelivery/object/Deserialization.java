@@ -79,12 +79,12 @@ public class Deserialization {
             return new Driver(object.get("name").getAsString(),UUID.fromString(object.get("id").getAsString()),hexToBytes(object.get("phash").getAsString()));
         }
     }
-    public static class UserRatingDeserializer implements JsonDeserializer<UserRating> {
+    public static class UserRatingDeserializer implements JsonDeserializer<Rating> {
 
         @Override
-        public UserRating deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public Rating deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject object = json.getAsJsonObject();
-            return new UserRating(UUID.fromString(object.get("creatorId").getAsString()),object.get("score").getAsDouble(),object.get("timestamp").getAsString());
+            return new Rating(UUID.fromString(object.get("creatorId").getAsString()),object.get("score").getAsDouble(),object.get("timestamp").getAsString());
         }
     }
     private static byte[] hexToBytes(String hex) {

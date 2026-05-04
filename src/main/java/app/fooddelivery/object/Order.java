@@ -32,6 +32,9 @@ public class Order{
     public void addItem(Item item, int quantity) {
         items.add(new QuantizedItem(item,quantity));
     }
+    public void addQuantizedItem(QuantizedItem item) {
+        items.add(item);
+    }
     public void removeItem(Item item){
         for (QuantizedItem quantizedItem : items){
             if (quantizedItem.getItemId().equals(item)){

@@ -5,12 +5,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import app.fooddelivery.object.Admin;
-import app.fooddelivery.object.Customer;
-import app.fooddelivery.object.Driver;
-import app.fooddelivery.object.Menu;
-import app.fooddelivery.object.State;
-import app.fooddelivery.object.User;
+import app.fooddelivery.object.*;
+
 
 
 
@@ -26,13 +22,13 @@ public class Restaurant {
             if (!isNameTaken(u.getName(), state.users) && (!isIdTaken(u.getId(), state.users))) {
                 switch (u.getRole()) {
                     case "Admin":
-                        state.users.add(new Admin(u));
+                        state.users.add((Admin) u);
                         break;
                     case "Driver":
-                        state.users.add(new Driver(u));
+                        state.users.add((Driver) u);
                         break;
                     default:
-                        state.users.add(new Customer(u));
+                        state.users.add((Customer) u);
                         break;
                 }
             }
@@ -105,5 +101,12 @@ public class Restaurant {
     }
     public Menu getMenu() {
         return state.menu;
+    }
+    public void addOrder(Order o) {
+        state.orderQueue.add(o);
+    }
+    public Order nextOrder() { return state.orderQueue.poll();}
+    public void addRating(Rating rate) {
+        // TODO send to driver assingment or something to store rates
     }
 }

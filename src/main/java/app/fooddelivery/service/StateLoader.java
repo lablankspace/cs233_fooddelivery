@@ -32,8 +32,8 @@ public class StateLoader {
                 .registerTypeAdapter(Driver.class, new Serialization.DriverSerializer())
                 .registerTypeAdapter(Driver.class, new Deserialization.DriverDeserializer())
                 // UserRating
-                .registerTypeAdapter(UserRating.class, new Serialization.UserRatingSerializer())
-                .registerTypeAdapter(UserRating.class, new Deserialization.UserRatingDeserializer())
+                .registerTypeAdapter(Rating.class, new Serialization.UserRatingSerializer())
+                .registerTypeAdapter(Rating.class, new Deserialization.UserRatingDeserializer())
                 .create();
     }
     public static Optional<State> loadFrom(File file){
