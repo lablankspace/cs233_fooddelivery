@@ -30,7 +30,7 @@ public class Restaurant {
     }
     }
     public boolean containsUser(User u) {
-        return state.users.containsKey(u);
+        return state.users.containsValue(u);
     }
     public boolean containsUser(String name) {
         for ( User u : state.users.values()) {
