@@ -7,8 +7,8 @@ import app.fooddelivery.object.Driver;
 import app.fooddelivery.object.Order;
 import app.fooddelivery.object.Rating;
 import app.fooddelivery.service.Restaurant;
-import app.fooddelivery.ui.Utils.Term;
 import app.fooddelivery.ui.Utils.Screen;
+import app.fooddelivery.ui.Utils.Term;
 
 
 public class DriverUI {
@@ -28,23 +28,16 @@ public static class DriverHome implements Screen{
         ));
         
         List<Utils.Line> lines = new ArrayList<>(List.of(
-            new Utils.Button("View Orders", () -> {
-                return new ViewActiveOrders(driver);
-            }),
-            new Utils.Button("View Rates", () -> {
-                return new ViewRates(driver);
-            }),
-            new Utils.Button("Exit", () -> {
-                return new Login();
-            })
-        ));
+            new Utils.Button("View Orders", () -> new ViewActiveOrders(driver)),
+            new Utils.Button("View Rates", () -> new ViewRates(driver)),
+            new Utils.Button("Exit", () -> new Login())));
             return Utils.loop(title, lines, term);
     }
 }
 public static class ViewActiveOrders implements Screen {
     private Driver driver;
 
-    public ViewAciveOrders(Driver driver) {
+    public ViewActiveOrders(Driver driver) {
         this.driver = driver;
     }
     public Screen run(Term term, Restaurant restaurant) {
@@ -57,13 +50,9 @@ public static class ViewActiveOrders implements Screen {
         List<Utils.Line> lines = new ArrayList<>();
 
         for (Order order : driver.getOrders()) {
-            lines.add(new Utils.Button(order.getId().toString() + " " + order.getStatus(), () -> {
-                viewOrder(term, restaurant, driver, order);
-            }));
+            lines.add(new Utils.Button(order.getId().toString() + " " + order.getStatus(), () -> new ViewOrder(driver, order)));
         }
-        lines.add(new Utils.Button("Exit", () -> {
-            return new DriverHome(driver);
-        }));
+        lines.add(new Utils.Button("Exit", () -> new DriverHome(driver)));
 
         return Utils.loop(tilte, lines, term);
     }
@@ -124,9 +113,7 @@ public static class ViewRates implements Screen{
         for (Rating rate : driver.getRates()) {
             lines.add(new Utils.Text(rate.toString()));
         }
-        lines.add(new Utils.Button("Exit", () -> {
-            return new DriverHome(driver);
-        }));
+        lines.add(new Utils.Button("Exit", () -> new DriverHome(driver)));
 
         return Utils.loop(tilte, lines, term);
     }

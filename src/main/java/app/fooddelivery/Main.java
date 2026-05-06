@@ -11,6 +11,7 @@ import app.fooddelivery.object.State;
 import app.fooddelivery.service.Restaurant;
 import app.fooddelivery.service.StateLoader;
 import app.fooddelivery.ui.Login;
+import app.fooddelivery.ui.Utils.Screen;
 import app.fooddelivery.ui.Utils.Term;
 
 public class Main {
@@ -32,11 +33,15 @@ public class Main {
         restaurant.getMenu().addItem(burger);
 
         Term term = new Term();
-        try {
-            Login.run(term, restaurant);        
-        } catch(Exception e) {
-            e.printStackTrace();
-        }finally{
+        Screen current = new Login();
+        while (current != null) {
+            current = current.run(term, restaurant);
+        }
+    //    try {
+    //        Login.run(term, restaurant);        
+    //    } catch(Exception e) {
+    //        e.printStackTrace();
+    //    }finally{
             try {
 				StateLoader.saveTo(stateFileTarget,state);
 			} catch (IOException e) {
@@ -44,4 +49,3 @@ public class Main {
 			}
         }
     }
-}

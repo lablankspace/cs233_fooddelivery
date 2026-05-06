@@ -8,9 +8,11 @@ import app.fooddelivery.object.Customer;
 import app.fooddelivery.object.Driver;
 import app.fooddelivery.object.User;
 import app.fooddelivery.service.Restaurant;
-import app.fooddelivery.ui.Utils.Term;
+import app.fooddelivery.ui.AdminUI.AdminHome;
+import app.fooddelivery.ui.CustomerUI.CustomerHome;
+import app.fooddelivery.ui.DriverUI.DriverHome;
 import app.fooddelivery.ui.Utils.Screen;
-import app.fooddelivery.ui.CustomerUI.*;
+import app.fooddelivery.ui.Utils.Term;
 
 
 public class Login implements Screen{
@@ -30,33 +32,27 @@ public class Login implements Screen{
         lines.add(username);
         lines.add(password);
         Utils.Text error = new Utils.Text("Invalid Login: Please try again");
-        lines.add(new Utils.Button("Login", () -> {
+        lines.add(new Utils.Button("Yes", () -> {
                 String user = username.getInput();
                 String pass = password.getInput();
 
                 User u = restaurant.getUser(user);
-                
-                if (u != null && u.checkPassword(pass)) {
-
+                if(u != null && u.checkPassword(pass)) {
                     if (u instanceof Customer) {
-                        Customer c = (Customer) u;
-                        return new CustomerHome(c);
+                        return new CustomerHome((Customer) u);
                     }
-
-                    if (u instanceof Driver) {
-                        Driver d = (Driver) u;
-                        return new DriverHomeScreen(d);
+                    if ( u instanceof Driver) {
+                        return new DriverHome((Driver) u);
                     }
-
-                    if (u instanceof Admin) {
-                        Admin a = (Admin) u;
-                        return new AdminHomeScreen(a);
+                    if ( u instanceof Admin) {
+                        return new AdminHome((Admin) u);
                     }
+                    title.add(error);
                 }
-                title.add(error);
-                return null;
-            }));
+                return new Login();
+        }));
+
         lines.add(new Utils.Button("Exit", () -> null));
-        Utils.loop(title, lines, term);
+        return Utils.loop(title, lines, term);
     }
 }

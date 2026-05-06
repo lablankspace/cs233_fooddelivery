@@ -9,12 +9,12 @@ import app.fooddelivery.object.Item;
 import app.fooddelivery.object.Menu;
 import app.fooddelivery.object.Order;
 import app.fooddelivery.service.Restaurant;
-import app.fooddelivery.ui.Utils.Term;
 import app.fooddelivery.ui.Utils.Screen;
+import app.fooddelivery.ui.Utils.Term;
 
 public class AdminUI {
 public static class AdminHome implements Screen {
-    private Admin admin;
+    private final Admin admin;
 
     public AdminHome(Admin admin) {
         this.admin = admin;
@@ -28,14 +28,14 @@ public static class AdminHome implements Screen {
         ));
         
         List<Utils.Line> lines = new ArrayList<>(List.of(
-            new Utils.Button("View Menu", () -> return new ViewMenu(admin); ),
-            new Utils.Button("View Orders", () -> return new ViewOrders(admin); ),
-            new Utils.Button("Exit", () -> return new Login(); )));
+            new Utils.Button("View Menu", () -> new ViewMenu(admin)),
+            new Utils.Button("View Orders", () -> new ViewOrders(admin)),
+            new Utils.Button("Exit", () -> new Login())));
             return Utils.loop(title, lines, term);
     }
 }
 public static class ViewMenu implements Screen{
-    private Admin admin;
+    private final Admin admin;
 
     public ViewMenu(Admin admin) {
         this.admin = admin;
@@ -54,17 +54,17 @@ public static class ViewMenu implements Screen{
         
         for (Item item : menu.getItems()) {
             Utils.Button line = new Utils.Button(item.getName() + " --- " + item.getDescription()+ " --- $" + item.getPrice(), () -> 
-                return new ViewItem(admin, item); 
+                new ViewItem(admin, item) 
             );
             lines.add(line);
         }
-        lines.add(new Utils.Button("New Item", () -> return new AddItem(admin);));
-        lines.add(new Utils.Button("Exit", () -> return new Login(); ));
+        lines.add(new Utils.Button("New Item", () -> new AddItem(admin)));
+        lines.add(new Utils.Button("Exit", () -> new Login() ));
         return Utils.loop(title, lines, term);
     }
 }
 public static class AddItem implements Screen{
-    private Admin admin;
+    private final Admin admin;
 
     public AddItem(Admin admin) {
         this.admin = admin;
@@ -92,7 +92,7 @@ public static class AddItem implements Screen{
                 restaurant.getMenu().addItem(item);
                 return new ViewOrders(admin);
             } catch (NumberFormatException e) {
-                lines.add(new Utils.Text("Price must be a number (e.g. 5.50)"));
+                return new AddItem(admin);
             }
         }));
         lines.add(new Utils.Button("Exit", () -> {
@@ -102,8 +102,8 @@ public static class AddItem implements Screen{
     }
 }
 public static class ViewItem implements Screen{
-    private Admin admin;
-    private Item item;
+    private final Admin admin;
+    private final Item item;
 
     public ViewItem(Admin admin, Item item) {
         this.admin = admin;
@@ -119,28 +119,18 @@ public static class ViewItem implements Screen{
         ));
         
         List<Utils.Line> lines = new ArrayList<>(List.of(
-            new Utils.Button("Edit Name", () -> {
-                return new editName(term, restaurant, admin, item);
-            }),
-            new Utils.Button("Edit Description", () -> {
-                return new editDescription(term, restaurant, admin, item);
-            }),
-            new Utils.Button("Edit Price", () -> {
-                return new editPrice(term, restaurant, admin, item);
-            }),
-            new Utils.Button("Delete Item", () -> {
-                return new removeItem(term, restaurant, admin, item);
-            }),
-            new Utils.Button("Exit", () -> {
-                return new ViewMenu(admin);
-            })
+            new Utils.Button("Edit Name", () -> new EditName(admin, item)),
+            new Utils.Button("Edit Description", () -> new EditDescription(admin, item)),
+            new Utils.Button("Edit Price", () -> new EditPrice(admin, item)),
+            new Utils.Button("Delete Item", () -> new RemoveItem(admin, item)),
+            new Utils.Button("Exit", () -> new ViewMenu(admin))
         ));
         return Utils.loop(title, lines, term);
     }
 }
 public static class EditName implements Screen{
-    private Admin admin;
-    private Item item;
+    private final Admin admin;
+    private final Item item;
     
     public EditName(Admin admin, Item item) {
         this.admin = admin;
@@ -170,8 +160,8 @@ public static class EditName implements Screen{
     }
 }
 public static class EditDescription implements Screen{
-    private Admin admin;
-    private Item item;
+    private final Admin admin;
+    private final Item item;
     
     public EditDescription(Admin admin, Item item) {
         this.admin = admin;
@@ -201,8 +191,8 @@ public static class EditDescription implements Screen{
     }
 }
 public static class EditPrice implements Screen{
-    private Admin admin;
-    private Item item;
+    private final Admin admin;
+    private final Item item;
     
     public EditPrice(Admin admin, Item item) {
         this.admin = admin;
@@ -226,19 +216,17 @@ public static class EditPrice implements Screen{
                 item.editPrice(priceD);
                 return new ViewItem(admin, item);
             } catch (NumberFormatException e) {
-                lines.add(new Utils.Text("Price must be a number (e.g. 5.50)"));
+                return new EditPrice(admin, item);
             }
         }));
-        lines.add(new Utils.Button("Exit", () -> {
-                return new ViewItem(admin, item);
-        }));
+        lines.add(new Utils.Button("Exit", () -> new ViewItem(admin, item)));
 
         return Utils.loop(title, lines, term);
     }
 }
 public static class RemoveItem implements Screen{
-    private Admin admin;
-    private Item item;
+    private final Admin admin;
+    private final Item item;
     
     public RemoveItem(Admin admin, Item item) {
         this.admin = admin;
@@ -266,7 +254,7 @@ public static class RemoveItem implements Screen{
     }
 }
 public static class ViewOrders implements Screen{
-    private Admin admin;
+    private final Admin admin;
     
     public ViewOrders(Admin admin) {
         this.admin = admin;
@@ -283,28 +271,22 @@ public static class ViewOrders implements Screen{
         List<Utils.Line> lines = new ArrayList<>();
         lines.add(new Utils.Text("Order Queue: "));
         for (Order order : restaurant.getOrderQueue()) {
-            lines.add(new Utils.Button(order.getId().toString(), () -> {
-                return new viewOrder(admin, order);
-            }));
+            lines.add(new Utils.Button(order.getId().toString(), () -> new ViewOrder(admin, order)));
         }
         lines.add(new Utils.Text("Active Orders: "));
         for ( Driver driver : restaurant.getDrivers() ) {
             for ( Order order : driver.getOrders()) {
-                lines.add(new Utils.Button(order.getId().toString(), () -> {
-                return new viewOrder(admin, order);
-                }));
+                lines.add(new Utils.Button(order.getId().toString(), () -> new ViewOrder(admin, order)));
             }
         }
-        lines.add(new Utils.Button("Exit", () -> {
-            return new AdminHome(admin);
-        }));
+        lines.add(new Utils.Button("Exit", () -> new AdminHome(admin)));
 
         return Utils.loop(title, lines, term);
     }
 }
 public static class ViewOrder implements Screen{
-    private Admin admin;
-    private Order order;
+    private final Admin admin;
+    private final Order order;
     
     public ViewOrder(Admin admin, Order order) {
         this.admin = admin;
@@ -323,9 +305,7 @@ public static class ViewOrder implements Screen{
 
         ));
         List<Utils.Line> lines = new ArrayList<>();
-        lines.add(new Utils.Button("Exit", () -> {
-            return new ViewOrders(admin);
-        }));
+        lines.add(new Utils.Button("Exit", () -> new ViewOrders(admin)));
         return Utils.loop(title, lines, term, 6);
     }
 }

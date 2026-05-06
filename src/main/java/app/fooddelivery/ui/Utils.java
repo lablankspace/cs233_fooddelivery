@@ -13,7 +13,7 @@ import com.googlecode.lanterna.terminal.Terminal;
 import app.fooddelivery.service.Restaurant;
 
 public class Utils {
-        interface Screen {
+        public interface Screen {
                 Screen run(Term term, Restaurant restaurant);
         }
         interface Line {
