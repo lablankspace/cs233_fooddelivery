@@ -1,7 +1,6 @@
 package app.fooddelivery.ui;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import app.fooddelivery.object.Customer;
@@ -12,12 +11,11 @@ import app.fooddelivery.object.QuantizedItem;
 import app.fooddelivery.object.Rating;
 import app.fooddelivery.service.Restaurant;
 import app.fooddelivery.ui.Utils.Term;
-import app.fooddelivery.ui.Utils.exitCondition;
 
 
 public class CustomerUI {
-    public static void home(Term term, Restaurant restaurant, Customer customer) {
-        exitCondition active = new exitCondition();
+    public Screen home(Term term, Restaurant restaurant, Customer customer) {
+        Utils.ExitCondition active = new Utils.ExitCondition();
         term.clear();
         List<Utils.Line> title = new ArrayList<>(List.of(
             new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
@@ -27,20 +25,21 @@ public class CustomerUI {
         List<Utils.Line> lines = new ArrayList<>(List.of(
             new Utils.Button("Place Order", () -> {
                 placeOrder(term, restaurant, customer);
+                term.clear();
             }),
             new Utils.Button("View Order History", () -> {
                 viewOrderHistory(term, restaurant, customer);
+                term.clear();
             }),
             new Utils.Button("Exit", () -> {
-                term.clear();
-                active.condition = false;
+                active.stop();
             })
         ));
             Utils.loop(title, lines, term, active);
     }
 
     public static void placeOrder(Term term, Restaurant restaurant, Customer customer) {
-        exitCondition active = new exitCondition();
+        Utils.ExitCondition active = new Utils.ExitCondition();
         term.clear();
 
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -53,13 +52,13 @@ public class CustomerUI {
         List<Utils.Line> lines = new ArrayList<>();
         List<QuantizedItem> items = new ArrayList<>();
         
-        for (HashMap.Entry<Item, Double> item : menu.getHash().entrySet()) {
-            Utils.Amount line = new Utils.Amount(item.getKey().getName() + " --- " + item.getKey().getDescription()+ " --- $" + item.getValue().toString());
+        for (Item item : menu.getItems()) {
+            Utils.Amount line = new Utils.Amount(item.getName() + " --- " + item.getDescription()+ " --- $" + item.getPrice());
             lines.add(line);
-            QuantizedItem qItem = new QuantizedItem(item.getKey(), line.quantity());
+            QuantizedItem qItem = new QuantizedItem(item, line.quantity());
             items.add(qItem);
         }
-        
+        // TODO Move qItem out of for loop somehow
 
         lines.add(new Utils.Button("Place Order", () -> {
                 Order o = new Order(customer);
@@ -68,11 +67,10 @@ public class CustomerUI {
                 restaurant.update();
                 customer.addOrder(o);
                 // Write all orders to file for transaction history
-                active.condition = false;
+                active.stop();
             }));
         lines.add(new Utils.Button("Exit", () -> {
-            term.clear();
-            active.condition = false;
+            active.stop();
             })
         );
         
@@ -80,7 +78,7 @@ public class CustomerUI {
     }
 
     public static void viewOrderHistory(Term term, Restaurant restaurant, Customer customer) {
-        exitCondition active = new exitCondition();
+        Utils.ExitCondition active = new Utils.ExitCondition();
         term.clear();
 
         List<Utils.Line> tilte = new ArrayList<>(List.of(
@@ -92,11 +90,11 @@ public class CustomerUI {
         for (Order order : customer.getOrderHistory()) {
             lines.add(new Utils.Button(order.getId().toString(), () -> {
                 viewOrder(term, restaurant, customer, order);
+                term.clear();
             }));
         }
         lines.add(new Utils.Button("Exit", () -> {
-            term.clear();
-            active.condition = false;
+            active.stop();
         }));
 
         Utils.loop(tilte, lines, term, active);
@@ -104,7 +102,7 @@ public class CustomerUI {
     }
     
     public static void viewOrder(Term term, Restaurant restaurant, Customer customer, Order order) {
-        exitCondition active = new exitCondition();
+        Utils.ExitCondition active = new Utils.ExitCondition();
         term.clear();
 
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -119,17 +117,17 @@ public class CustomerUI {
         if (order.getStatus() == Order.Status.DELIVERED) {
             lines.add(new Utils.Button("Rate Driver", () -> {
                     rateOrder(term, restaurant, customer, order);
+                    term.clear();
                 }));
             }
         lines.add(new Utils.Button("Exit", () -> {
-            term.clear();
-            active.condition = false;
+            active.stop();
         }));
         Utils.loop(title, lines, term, active, 6);
     }
 
     public static void rateOrder(Term term, Restaurant restaurant, Customer customer, Order order) {
-        exitCondition active = new exitCondition();
+        Utils.ExitCondition active = new Utils.ExitCondition();
         term.clear();
 
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -141,8 +139,7 @@ public class CustomerUI {
         Utils.Button enter = new Utils.Button("Submit Rating", () -> {
             Rating rating = new Rating(customer, rate.quantity());
             restaurant.addRating(rating);
-            term.clear();
-            active.condition = false;
+            active.stop();
         });
         lines.add(rate);
         lines.add(enter);

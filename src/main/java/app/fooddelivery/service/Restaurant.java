@@ -107,7 +107,11 @@ public class Restaurant {
     public void update() {
         DriverAssignment.assignDriver(this);
     }
+    public Collection<Order> getOrderQueue() {
+        return Collections.unmodifiableCollection(state.orderQueue);
+    }
     public void addRating(Rating rate) {
         // TODO send to driver assingment or something to store rates
     }
+    
 }

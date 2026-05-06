@@ -1,18 +1,19 @@
 package app.fooddelivery.ui;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import app.fooddelivery.object.Admin;
+import app.fooddelivery.object.Driver;
 import app.fooddelivery.object.Item;
 import app.fooddelivery.object.Menu;
+import app.fooddelivery.object.Order;
 import app.fooddelivery.service.Restaurant;
 import app.fooddelivery.ui.Utils.Term;
 
 public class AdminUI {
     public static void home(Term term, Restaurant restaurant, Admin admin) {
-        Utils.exitCondition active = new Utils.exitCondition();
+        Utils.ExitCondition active = new Utils.ExitCondition();
         term.clear();
                         
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -25,17 +26,16 @@ public class AdminUI {
                 viewMenu(term, restaurant, admin);
             }),
             new Utils.Button("View Orders", () -> {
-                viewOrder(term, restaurant, admin);
+                viewOrders(term, restaurant, admin);
             }),
             new Utils.Button("Exit", () -> {
-                term.clear();
-                active.condition = false;
+                active.stop();
             })
         ));
             Utils.loop(title, lines, term, active);
     }
     public static void viewMenu(Term term, Restaurant restaurant, Admin admin) {
-        Utils.exitCondition active = new Utils.exitCondition();
+        Utils.ExitCondition active = new Utils.ExitCondition();
         term.clear();
                         
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -45,9 +45,10 @@ public class AdminUI {
         
         List<Utils.Line> lines = new ArrayList<>();
         Menu menu = restaurant.getMenu();
-        for (HashMap.Entry<Item, Double> item : menu.getHash().entrySet()) {
-            Utils.Button line = new Utils.Button(item.getKey().getName() + " --- " + item.getKey().getDescription()+ " --- $" + item.getValue().toString(), () -> {
-                removeItem(term, restaurant, admin, item.getKey());
+        
+        for (Item item : menu.getItems()) {
+            Utils.Button line = new Utils.Button(item.getName() + " --- " + item.getDescription()+ " --- $" + item.getPrice(), () -> {
+                viewItem(term, restaurant, admin, item);
             });
             lines.add(line);
         }
@@ -56,17 +57,13 @@ public class AdminUI {
             })
         );
         lines.add(new Utils.Button("Exit", () -> {
-                term.clear();
-                active.condition = false;
+                active.stop();
             })
         );
             Utils.loop(title, lines, term, active);
     }
-    public static void viewOrder(Term term, Restaurant restaurant, Admin admin) {
-        
-    }
     public static void addItem(Term term, Restaurant restaurant, Admin admin) {
-        Utils.exitCondition active = new Utils.exitCondition();
+        Utils.ExitCondition active = new Utils.ExitCondition();
         term.clear();
                         
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -74,22 +71,129 @@ public class AdminUI {
             new Utils.Text("Create new Menu Item")
         ));
 
+        List<Utils.Line> lines = new ArrayList<>();
+        Utils.Input name = new Utils.Input("Item Name: ", false);
+        Utils.Input desc = new Utils.Input("Item Description: ", false);
+        Utils.Input price = new Utils.Input("Price: ", false);
+        lines.add(name);
+        lines.add(desc);
+        lines.add(price);
+        lines.add(new Utils.Button("Add Item", () -> {
+            try {
+                double priceD = Double.parseDouble(price.getInput());
+                Item item = new Item(name.getInput(), desc.getInput(), priceD);
+                restaurant.getMenu().addItem(item);
+                active.stop();
+            } catch (NumberFormatException e) {
+                lines.add(new Utils.Text("Price must be a number (e.g. 5.50)"));
+            }
+        }));
+        lines.add(new Utils.Button("Exit", () -> {
+            active.stop();
+        }));
+        Utils.loop(title, lines, term, active);
+    }
+    public static void viewItem(Term term, Restaurant restaurant, Admin admin, Item item) {
+        Utils.ExitCondition active = new Utils.ExitCondition();
+        term.clear();
+                        
+        List<Utils.Line> title = new ArrayList<>(List.of(
+            new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
+            new Utils.Text(item.getName())
+        ));
+        
         List<Utils.Line> lines = new ArrayList<>(List.of(
-            new Utils.Input("Item Name: ", false),
-            new Utils.Input("Item Description: ", false),
-            new Utils.Input("Price", false),
-            new Utils.Button("Add Item", () -> {
-                // pull info and add item
+            new Utils.Button("Edit Name", () -> {
+                editName(term, restaurant, admin, item);
+            }),
+            new Utils.Button("Edit Description", () -> {
+                editDescription(term, restaurant, admin, item);
+            }),
+            new Utils.Button("Edit Price", () -> {
+                editPrice(term, restaurant, admin, item);
+            }),
+            new Utils.Button("Delete Item", () -> {
+                removeItem(term, restaurant, admin, item);
             }),
             new Utils.Button("Exit", () -> {
-                term.clear();
-                active.condition = false;
+                active.stop();
             })
         ));
         Utils.loop(title, lines, term, active);
     }
+    public static void editName(Term term, Restaurant restaurant, Admin admin, Item item) {
+        Utils.ExitCondition active = new Utils.ExitCondition();
+        term.clear();
+                        
+        List<Utils.Line> title = new ArrayList<>(List.of(
+            new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
+            new Utils.Text("Editing " + item.getName() + "'s Name")
+        ));
+        
+        List<Utils.Line> lines = new ArrayList<>();
+        Utils.Input name = new Utils.Input("New Name: ", false);
+        lines.add(name);
+        lines.add(new Utils.Button("Save Name", () -> {
+            item.editName(name.getInput());
+            active.stop();
+        }));
+        lines.add(new Utils.Button("Exit", () -> {
+                active.stop();
+        }));
+
+        Utils.loop(title, lines, term, active);
+    }
+    public static void editDescription(Term term, Restaurant restaurant, Admin admin, Item item) {
+        Utils.ExitCondition active = new Utils.ExitCondition();
+        term.clear();
+                        
+        List<Utils.Line> title = new ArrayList<>(List.of(
+            new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
+            new Utils.Text("Editing " + item.getName() + "'s Description")
+        ));
+        
+        List<Utils.Line> lines = new ArrayList<>();
+        Utils.Input description = new Utils.Input("New Description: ", false);
+        lines.add(description);
+        lines.add(new Utils.Button("Save Description", () -> {
+            item.editDescription(description.getInput());
+            active.stop();
+        }));
+        lines.add(new Utils.Button("Exit", () -> {
+                active.stop();
+        }));
+
+        Utils.loop(title, lines, term, active);
+    }
+    public static void editPrice(Term term, Restaurant restaurant, Admin admin, Item item) {
+        Utils.ExitCondition active = new Utils.ExitCondition();
+        term.clear();
+                        
+        List<Utils.Line> title = new ArrayList<>(List.of(
+            new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
+            new Utils.Text("Editing " + item.getName() + "'s Price")
+        ));
+        
+        List<Utils.Line> lines = new ArrayList<>();
+        Utils.Input price = new Utils.Input("New Price: ", false);
+        lines.add(price);
+        lines.add(new Utils.Button("Save Price", () -> {
+            try {
+                double priceD = Double.parseDouble(price.getInput());
+                item.editPrice(priceD);
+                active.stop();
+            } catch (NumberFormatException e) {
+                lines.add(new Utils.Text("Price must be a number (e.g. 5.50)"));
+            }
+        }));
+        lines.add(new Utils.Button("Exit", () -> {
+                active.stop();
+        }));
+
+        Utils.loop(title, lines, term, active);
+    }
     public static void removeItem(Term term, Restaurant restaurant, Admin admin, Item item) {
-        Utils.exitCondition active = new Utils.exitCondition();
+        Utils.ExitCondition active = new Utils.ExitCondition();
         term.clear();
                         
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -100,13 +204,60 @@ public class AdminUI {
         List<Utils.Line> lines = new ArrayList<>(List.of(
             new Utils.Button("Yes", () -> {
                 restaurant.getMenu().removeItem(item);
-                active.condition = false;
+                active.stop();
             }),
             new Utils.Button("No", () -> {
-                term.clear();
-                active.condition = false;
+                active.stop();
             })
         ));
         Utils.loop(title, lines, term, active);
+    }
+    public static void viewOrders(Term term, Restaurant restaurant, Admin admin) {
+        Utils.ExitCondition active = new Utils.ExitCondition();
+        term.clear();
+                        
+        List<Utils.Line> title = new ArrayList<>(List.of(
+            new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
+            new Utils.Text("All active and inactive orders")
+        ));
+        
+        List<Utils.Line> lines = new ArrayList<>();
+        lines.add(new Utils.Text("Order Queue: "));
+        for (Order order : restaurant.getOrderQueue()) {
+            lines.add(new Utils.Button(order.getId().toString(), () -> {
+                viewOrder(term, restaurant, admin, order);
+            }));
+        }
+        lines.add(new Utils.Text("Active Orders: "));
+        for ( Driver driver : restaurant.getDrivers() ) {
+            for ( Order order : driver.getOrders()) {
+                lines.add(new Utils.Button(order.getId().toString(), () -> {
+                viewOrder(term, restaurant, admin, order);
+                }));
+            }
+        }
+        lines.add(new Utils.Button("Exit", () -> {
+            active.stop();
+        }));
+
+        Utils.loop(title, lines, term, active);
+    }
+    public static void viewOrder(Term term, Restaurant restaurant, Admin admin, Order order) {
+        Utils.ExitCondition active = new Utils.ExitCondition();
+        term.clear();
+
+        List<Utils.Line> title = new ArrayList<>(List.of(
+            new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
+            new Utils.Text("Order: " + order.getId().toString()),
+            new Utils.Text("Customer: " + order.getCustomer().getName()),
+            new Utils.Text("ID: " + order.getId().toString()),
+            new Utils.Text("Status: " + order.getStatus().toString())
+
+        ));
+        List<Utils.Line> lines = new ArrayList<>();
+        lines.add(new Utils.Button("Exit", () -> {
+            active.stop();
+        }));
+        Utils.loop(title, lines, term, active, 6);
     }
 }

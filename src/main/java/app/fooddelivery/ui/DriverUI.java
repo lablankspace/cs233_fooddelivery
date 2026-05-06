@@ -8,12 +8,11 @@ import app.fooddelivery.object.Order;
 import app.fooddelivery.object.Rating;
 import app.fooddelivery.service.Restaurant;
 import app.fooddelivery.ui.Utils.Term;
-import app.fooddelivery.ui.Utils.exitCondition;
 
 
 public class DriverUI {
     public static void home(Term term, Restaurant restaurant, Driver driver) {
-        Utils.exitCondition active = new Utils.exitCondition();
+        Utils.ExitCondition active = new Utils.ExitCondition();
         term.clear();
                         
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -24,20 +23,21 @@ public class DriverUI {
         List<Utils.Line> lines = new ArrayList<>(List.of(
             new Utils.Button("View Orders", () -> {
                 viewActiveOrders(term, restaurant, driver);
+                term.clear();
             }),
             new Utils.Button("View Rates", () -> {
                 viewRates(term, restaurant, driver);
+                term.clear();
             }),
             new Utils.Button("Exit", () -> {
-                term.clear();
-                active.condition = false;
+                active.stop();
             })
         ));
             Utils.loop(title, lines, term, active);
     }
 
     public static void viewActiveOrders(Term term, Restaurant restaurant, Driver driver) {
-        exitCondition active = new exitCondition();
+        Utils.ExitCondition active = new Utils.ExitCondition();
         term.clear();
 
         List<Utils.Line> tilte = new ArrayList<>(List.of(
@@ -49,18 +49,19 @@ public class DriverUI {
         for (Order order : driver.getOrders()) {
             lines.add(new Utils.Button(order.getId().toString() + " " + order.getStatus(), () -> {
                 viewOrder(term, restaurant, driver, order);
+                term.clear();
             }));
         }
         lines.add(new Utils.Button("Exit", () -> {
             term.clear();
-            active.condition = false;
+            active.stop();
         }));
 
         Utils.loop(tilte, lines, term, active);
     }
 
     public static void viewOrder(Term term, Restaurant restaurant, Driver driver, Order order) {
-        exitCondition active = new exitCondition();
+        Utils.ExitCondition active = new Utils.ExitCondition();
         term.clear();
 
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -74,22 +75,23 @@ public class DriverUI {
         if (order.getStatus() == Order.Status.ACCEPTED) {
             lines.add(new Utils.Button("Update to In-Progress", () -> {
                     order.updateStatus(Order.Status.INPROGRESS);
+                    active.stop();
             }));
         }
         if (order.getStatus() == Order.Status.INPROGRESS) {
             lines.add(new Utils.Button("Update to Delivered", () -> {
                     order.updateStatus(Order.Status.DELIVERED);
                     restaurant.update();
+                    active.stop();
             }));
         }
         lines.add(new Utils.Button("Exit", () -> {
-            term.clear();
-            active.condition = false;
+            active.stop();
         }));
         Utils.loop(title, lines, term, active, 6);
     }
     public static void viewRates(Term term, Restaurant restaurant, Driver driver) {
-        exitCondition active = new exitCondition();
+        Utils.ExitCondition active = new Utils.ExitCondition();
         term.clear();
 
         List<Utils.Line> tilte = new ArrayList<>(List.of(
@@ -102,8 +104,7 @@ public class DriverUI {
             lines.add(new Utils.Text(rate.toString()));
         }
         lines.add(new Utils.Button("Exit", () -> {
-            term.clear();
-            active.condition = false;
+            active.stop();
         }));
 
         Utils.loop(tilte, lines, term, active);
