@@ -50,4 +50,11 @@ public abstract class User {
     public int hashCode() {
         return id.hashCode();
     }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof User)) return false;
+        User other = (User) obj;
+        return id.equals(other.id);
+    }
 }

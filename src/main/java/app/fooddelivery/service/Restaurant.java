@@ -1,8 +1,9 @@
 package app.fooddelivery.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import app.fooddelivery.object.Admin;
@@ -23,81 +24,63 @@ public class Restaurant {
     public Restaurant(State state) {
         this.state = state;
     }
-
     public void addUser(User u) {
-        if (!state.users.contains(u)) {
-            if (!isNameTaken(u.getName(), state.users) && (!isIdTaken(u.getId(), state.users))) {
-                switch (u.getRole()) {
-                    case "Admin":
-                        state.users.add((Admin) u);
-                        break;
-                    case "Driver":
-                        state.users.add((Driver) u);
-                        break;
-                    default:
-                        state.users.add((Customer) u);
-                        break;
-                }
-            }
-        }
+    if (!state.users.containsKey(u.getId()) && !isNameTaken(u.getName(), state.users.values()) && !isIdTaken(u.getId(), state.users.values())) {
+        state.users.put(u.getId(), u);
+    }
     }
     public boolean containsUser(User u) {
-        return state.users.contains(u);
+        return state.users.containsKey(u);
     }
     public boolean containsUser(String name) {
-        for ( User u : state.users) {
+        for ( User u : state.users.values()) {
             if (u.getName().equals(name)) return true;
         }
         return false;
     }
     public void removeUser(User u) {
-        if (state.users.contains(u)) state.users.remove(u);
+        state.users.remove(u.getId());
     }
     public User getUser(String name) {
-        for ( User u : state.users) {
+        for ( User u : state.users.values()) {
             if (u.getName().equals(name)) return u;
         }
         return null;
     }
-    public Set<User> getUsers() {
-        return state.users;
+    public Collection<User> getUsers() {
+        return Collections.unmodifiableCollection(state.users.values());
     }
-    public List<Admin> getAdmins() {
-        List<Admin> admins = new ArrayList<>();
-        for ( User u : state.users) {
-            admins.add(new Admin(u));
+    
+    public Admin getAdmin(String name) {
+        for ( User u : state.users.values()) {
+            if ( u instanceof Admin && u.getName().equals(name)) 
+                return (Admin) u;
         }
-        return admins;
+        return null;
     }
     public List<Driver> getDrivers() {
         List<Driver> drivers = new ArrayList<>();
-        for ( User u : state.users) {
-            drivers.add(new Driver(u));
+        for ( User u : state.users.values()) {
+            if ( u instanceof Driver) drivers.add((Driver) u);
         }
         return drivers;
     }
     public Driver getDriver(String name) {
-        List<Driver> drivers = getDrivers();
-        for ( Driver d : drivers) {
-            if (d.getName().equals(name)) return d;
+        for ( User u : state.users.values()) {
+            if ( u instanceof Driver && u.getName().equals(name)) 
+                return (Driver) u;
         }
         return null;
-    }
-    public List<Customer> getCustomers() {
-        List<Customer> customers = new ArrayList<>();
-        for ( User u : state.users) {
-            customers.add(new Customer(u));
-        }
-        return customers;
     }
     public Customer getCustomer(String name) {
-        List<Customer> customers = getCustomers();
-        for ( Customer c : customers) {
-            if (c.getName().equals(name)) return c;
+        for ( User u : state.users.values()) {
+            if ( u instanceof Customer && u.getName().equals(name)) 
+                return (Customer) u;
         }
         return null;
     }
-    public static boolean isNameTaken(String name, Set<? extends User> users) {
+
+    public static boolean isNameTaken(String name, Collection<? extends User> users) {
         for (User u : users) {
             if (u.getName().equals(name)) {
                 return true;
@@ -105,7 +88,7 @@ public class Restaurant {
         }
         return false;
     }
-    public static boolean isIdTaken(UUID id, Set<? extends User> users) {
+    public static boolean isIdTaken(UUID id, Collection<? extends User> users) {
         for (User u : users) {
             if (u.getId().equals(id)) {
                 return true;
@@ -118,8 +101,12 @@ public class Restaurant {
     }
     public void addOrder(Order o) {
         state.orderQueue.add(o);
+        update();
     }
     public Order nextOrder() { return state.orderQueue.poll();}
+    public void update() {
+        DriverAssignment.assignDriver(this);
+    }
     public void addRating(Rating rate) {
         // TODO send to driver assingment or something to store rates
     }

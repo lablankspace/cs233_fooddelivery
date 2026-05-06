@@ -38,8 +38,6 @@ public class Driver extends User {
     public Driver(String name, String password) {
         this(name, UUID.randomUUID(), password);
     }
-
-
     public void addOrder(Order order) {
         orders.add(order);
     }

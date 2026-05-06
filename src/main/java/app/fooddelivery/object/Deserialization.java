@@ -20,12 +20,27 @@ public class Deserialization {
             JsonArray users = object.getAsJsonArray("users");
             for (JsonElement userElement : users){
                 String role = userElement.getAsJsonObject().get("role").getAsString();
-                state.users.add(context.deserialize(userElement,role.equals("Admin") ? Admin.class : (role.equals("Driver") ? Driver.class : Customer.class)));
+                Class<? extends User> type;
+                switch (role) {
+                    case "Admin":
+                        type = Admin.class;
+                        break;
+                    case "Driver":
+                        type = Driver.class;
+                        break;
+                    default:
+                        type = Customer.class;
+                        break;
+                }
+
+                User user = context.deserialize(userElement, type);
+
+                state.users.put(user.getId(), user);
             }
             JsonArray orders = object.getAsJsonArray("orders");
             for (JsonElement orderElement : orders){
                 Order order = context.deserialize(orderElement,Order.class);
-                for (User user : state.users){
+                for (User user : state.users.values()){
                     if (!(user instanceof Customer))continue;
                     if (order.getCustomerId().equals(user.getId())){
                         order.setCustomer((Customer) user);

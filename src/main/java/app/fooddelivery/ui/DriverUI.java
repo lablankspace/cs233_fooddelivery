@@ -71,12 +71,7 @@ public class DriverUI {
             new Utils.Text("Status: " + order.getStatus().toString())
         ));
         List<Utils.Line> lines = new ArrayList<>();
-        if (order.getStatus() == Order.Status.PLACED) {
-            lines.add(new Utils.Button("Update to Accepted", () -> {
-                    order.updateStatus(Order.Status.ACCEPTED);
-            }));
-        }
-        if (order.getStatus() == Order.Status.PLACED) {
+        if (order.getStatus() == Order.Status.ACCEPTED) {
             lines.add(new Utils.Button("Update to In-Progress", () -> {
                     order.updateStatus(Order.Status.INPROGRESS);
             }));
@@ -84,6 +79,7 @@ public class DriverUI {
         if (order.getStatus() == Order.Status.INPROGRESS) {
             lines.add(new Utils.Button("Update to Delivered", () -> {
                     order.updateStatus(Order.Status.DELIVERED);
+                    restaurant.update();
             }));
         }
         lines.add(new Utils.Button("Exit", () -> {

@@ -65,7 +65,9 @@ public class CustomerUI {
                 Order o = new Order(customer);
                 for ( QuantizedItem item : items) o.addQuantizedItem(item);
                 restaurant.addOrder(o);
+                restaurant.update();
                 customer.addOrder(o);
+                // Write all orders to file for transaction history
                 active.condition = false;
             }));
         lines.add(new Utils.Button("Exit", () -> {
