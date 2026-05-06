@@ -5,7 +5,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import app.fooddelivery.object.*;
+import app.fooddelivery.object.Admin;
+import app.fooddelivery.object.Customer;
+import app.fooddelivery.object.Driver;
+import app.fooddelivery.object.Menu;
+import app.fooddelivery.object.Order;
+import app.fooddelivery.object.Rating;
+import app.fooddelivery.object.State;
+import app.fooddelivery.object.User;
 
 
 
@@ -65,9 +72,16 @@ public class Restaurant {
     public List<Driver> getDrivers() {
         List<Driver> drivers = new ArrayList<>();
         for ( User u : state.users) {
-         //   drivers.add(new Driver(u));
+            drivers.add(new Driver(u));
         }
         return drivers;
+    }
+    public Driver getDriver(String name) {
+        List<Driver> drivers = getDrivers();
+        for ( Driver d : drivers) {
+            if (d.getName().equals(name)) return d;
+        }
+        return null;
     }
     public List<Customer> getCustomers() {
         List<Customer> customers = new ArrayList<>();

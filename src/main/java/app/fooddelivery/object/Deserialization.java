@@ -84,7 +84,7 @@ public class Deserialization {
         @Override
         public Rating deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject object = json.getAsJsonObject();
-            return new Rating(UUID.fromString(object.get("creatorId").getAsString()),object.get("score").getAsDouble(),object.get("timestamp").getAsString());
+            return new Rating(UUID.fromString(object.get("creatorId").getAsString()),object.get("score").getAsInt(),object.get("timestamp").getAsString());
         }
     }
     private static byte[] hexToBytes(String hex) {

@@ -204,4 +204,23 @@ public class Utils {
                         term.flush();
                 }
         }
+        public static void loop(List<Line> title, List<Line> lines, Term term, exitCondition active, int y) {
+                int selection = 0;
+
+                render(title, -1, term.size(), term.text(), 0);
+                render(lines, selection, term.size(), term.text(), y);
+
+                term.flush();
+
+                while (active.condition) {
+                        KeyStroke key = term.readKey();
+
+                        selection = keyPress(selection, key, lines);
+
+                        render(title, -1, term.size(), term.text(), 0);
+                        render(lines, selection, term.size(), term.text(), y);
+
+                        term.flush();
+                }
+        }
 }

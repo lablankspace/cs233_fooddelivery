@@ -7,13 +7,20 @@ public class Driver extends User {
     private Status status;
     private final ArrayList<Order> orders;
     final protected ArrayList<Rating> ratings;
+    
+    protected Driver(String name, UUID id, String password){
+        super(name, id, password);
+        this.status = Status.FREE;
+        orders = new ArrayList<>();
+        ratings = new ArrayList<>();
+    }
     protected Driver(String name, UUID id) {
         super(name,id.toString());
         this.status = Status.FREE;
         orders = new ArrayList<>();
         ratings = new ArrayList<>();
     }
-    public Driver(String name) {
+    protected Driver(String name) {
         this(name,UUID.randomUUID());
     }
     public Driver(User u) { 
@@ -28,12 +35,16 @@ public class Driver extends User {
         orders = new ArrayList<>();
         ratings = new ArrayList<>();
     }
+    public Driver(String name, String password) {
+        this(name, UUID.randomUUID(), password);
+    }
+
 
     public void addOrder(Order order) {
         orders.add(order);
     }
-    public String getOrders() {
-        return orders.toString();
+    public ArrayList<Order> getOrders() {
+        return orders;
     }
     public void startOrder(Order order) {
         order.updateStatus(Order.Status.INPROGRESS);
@@ -55,10 +66,12 @@ public class Driver extends User {
             avg += rate.getScore();
         }
         return avg / ratings.size();
-
     }
     public void addRate(Rating rate) {
         ratings.add(rate);
+    }
+    public ArrayList<Rating> getRates() {
+        return ratings;
     }
     @Override
     public String getRole() {
