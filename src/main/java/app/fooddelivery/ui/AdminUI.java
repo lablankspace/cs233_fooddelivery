@@ -10,10 +10,16 @@ import app.fooddelivery.object.Menu;
 import app.fooddelivery.object.Order;
 import app.fooddelivery.service.Restaurant;
 import app.fooddelivery.ui.Utils.Term;
+import app.fooddelivery.ui.Utils.Screen;
 
 public class AdminUI {
-    public static void home(Term term, Restaurant restaurant, Admin admin) {
-        Utils.ExitCondition active = new Utils.ExitCondition();
+public static class AdminHome implements Screen {
+    private Admin admin;
+
+    public AdminHome(Admin admin) {
+        this.admin = admin;
+    }
+    public Screen run(Term term, Restaurant restaurant) {
         term.clear();
                         
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -22,20 +28,20 @@ public class AdminUI {
         ));
         
         List<Utils.Line> lines = new ArrayList<>(List.of(
-            new Utils.Button("View Menu", () -> {
-                viewMenu(term, restaurant, admin);
-            }),
-            new Utils.Button("View Orders", () -> {
-                viewOrders(term, restaurant, admin);
-            }),
-            new Utils.Button("Exit", () -> {
-                active.stop();
-            })
-        ));
-            Utils.loop(title, lines, term, active);
+            new Utils.Button("View Menu", () -> return new ViewMenu(admin); ),
+            new Utils.Button("View Orders", () -> return new ViewOrders(admin); ),
+            new Utils.Button("Exit", () -> return new Login(); )));
+            return Utils.loop(title, lines, term);
     }
-    public static void viewMenu(Term term, Restaurant restaurant, Admin admin) {
-        Utils.ExitCondition active = new Utils.ExitCondition();
+}
+public static class ViewMenu implements Screen{
+    private Admin admin;
+
+    public ViewMenu(Admin admin) {
+        this.admin = admin;
+    }
+
+    public Screen run(Term term, Restaurant restaurant) {
         term.clear();
                         
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -47,23 +53,24 @@ public class AdminUI {
         Menu menu = restaurant.getMenu();
         
         for (Item item : menu.getItems()) {
-            Utils.Button line = new Utils.Button(item.getName() + " --- " + item.getDescription()+ " --- $" + item.getPrice(), () -> {
-                viewItem(term, restaurant, admin, item);
-            });
+            Utils.Button line = new Utils.Button(item.getName() + " --- " + item.getDescription()+ " --- $" + item.getPrice(), () -> 
+                return new ViewItem(admin, item); 
+            );
             lines.add(line);
         }
-        lines.add(new Utils.Button("New Item", () -> {
-                addItem(term, restaurant, admin);
-            })
-        );
-        lines.add(new Utils.Button("Exit", () -> {
-                active.stop();
-            })
-        );
-            Utils.loop(title, lines, term, active);
+        lines.add(new Utils.Button("New Item", () -> return new AddItem(admin);));
+        lines.add(new Utils.Button("Exit", () -> return new Login(); ));
+        return Utils.loop(title, lines, term);
     }
-    public static void addItem(Term term, Restaurant restaurant, Admin admin) {
-        Utils.ExitCondition active = new Utils.ExitCondition();
+}
+public static class AddItem implements Screen{
+    private Admin admin;
+
+    public AddItem(Admin admin) {
+        this.admin = admin;
+    }
+
+    public Screen run(Term term, Restaurant restaurant) {
         term.clear();
                         
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -83,18 +90,27 @@ public class AdminUI {
                 double priceD = Double.parseDouble(price.getInput());
                 Item item = new Item(name.getInput(), desc.getInput(), priceD);
                 restaurant.getMenu().addItem(item);
-                active.stop();
+                return new ViewOrders(admin);
             } catch (NumberFormatException e) {
                 lines.add(new Utils.Text("Price must be a number (e.g. 5.50)"));
             }
         }));
         lines.add(new Utils.Button("Exit", () -> {
-            active.stop();
+            return new ViewOrders(admin);
         }));
-        Utils.loop(title, lines, term, active);
+        return Utils.loop(title, lines, term);
     }
-    public static void viewItem(Term term, Restaurant restaurant, Admin admin, Item item) {
-        Utils.ExitCondition active = new Utils.ExitCondition();
+}
+public static class ViewItem implements Screen{
+    private Admin admin;
+    private Item item;
+
+    public ViewItem(Admin admin, Item item) {
+        this.admin = admin;
+        this.item = item;
+    }
+    
+    public Screen run(Term term, Restaurant restaurant) {
         term.clear();
                         
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -104,25 +120,34 @@ public class AdminUI {
         
         List<Utils.Line> lines = new ArrayList<>(List.of(
             new Utils.Button("Edit Name", () -> {
-                editName(term, restaurant, admin, item);
+                return new editName(term, restaurant, admin, item);
             }),
             new Utils.Button("Edit Description", () -> {
-                editDescription(term, restaurant, admin, item);
+                return new editDescription(term, restaurant, admin, item);
             }),
             new Utils.Button("Edit Price", () -> {
-                editPrice(term, restaurant, admin, item);
+                return new editPrice(term, restaurant, admin, item);
             }),
             new Utils.Button("Delete Item", () -> {
-                removeItem(term, restaurant, admin, item);
+                return new removeItem(term, restaurant, admin, item);
             }),
             new Utils.Button("Exit", () -> {
-                active.stop();
+                return new ViewMenu(admin);
             })
         ));
-        Utils.loop(title, lines, term, active);
+        return Utils.loop(title, lines, term);
     }
-    public static void editName(Term term, Restaurant restaurant, Admin admin, Item item) {
-        Utils.ExitCondition active = new Utils.ExitCondition();
+}
+public static class EditName implements Screen{
+    private Admin admin;
+    private Item item;
+    
+    public EditName(Admin admin, Item item) {
+        this.admin = admin;
+        this.item = item;
+    }
+
+    public Screen run(Term term, Restaurant restaurant) {
         term.clear();
                         
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -135,16 +160,25 @@ public class AdminUI {
         lines.add(name);
         lines.add(new Utils.Button("Save Name", () -> {
             item.editName(name.getInput());
-            active.stop();
+            return new ViewItem(admin, item);
         }));
         lines.add(new Utils.Button("Exit", () -> {
-                active.stop();
+            return new ViewItem(admin, item);
         }));
 
-        Utils.loop(title, lines, term, active);
+        return Utils.loop(title, lines, term);
     }
-    public static void editDescription(Term term, Restaurant restaurant, Admin admin, Item item) {
-        Utils.ExitCondition active = new Utils.ExitCondition();
+}
+public static class EditDescription implements Screen{
+    private Admin admin;
+    private Item item;
+    
+    public EditDescription(Admin admin, Item item) {
+        this.admin = admin;
+        this.item = item;
+    }
+
+    public Screen run(Term term, Restaurant restaurant) {
         term.clear();
                         
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -157,16 +191,25 @@ public class AdminUI {
         lines.add(description);
         lines.add(new Utils.Button("Save Description", () -> {
             item.editDescription(description.getInput());
-            active.stop();
+            return new ViewItem(admin, item);
         }));
         lines.add(new Utils.Button("Exit", () -> {
-                active.stop();
+                return new ViewItem(admin, item);
         }));
 
-        Utils.loop(title, lines, term, active);
+        return Utils.loop(title, lines, term);
     }
-    public static void editPrice(Term term, Restaurant restaurant, Admin admin, Item item) {
-        Utils.ExitCondition active = new Utils.ExitCondition();
+}
+public static class EditPrice implements Screen{
+    private Admin admin;
+    private Item item;
+    
+    public EditPrice(Admin admin, Item item) {
+        this.admin = admin;
+        this.item = item;
+    }
+
+    public Screen run(Term term, Restaurant restaurant) {
         term.clear();
                         
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -181,19 +224,28 @@ public class AdminUI {
             try {
                 double priceD = Double.parseDouble(price.getInput());
                 item.editPrice(priceD);
-                active.stop();
+                return new ViewItem(admin, item);
             } catch (NumberFormatException e) {
                 lines.add(new Utils.Text("Price must be a number (e.g. 5.50)"));
             }
         }));
         lines.add(new Utils.Button("Exit", () -> {
-                active.stop();
+                return new ViewItem(admin, item);
         }));
 
-        Utils.loop(title, lines, term, active);
+        return Utils.loop(title, lines, term);
     }
-    public static void removeItem(Term term, Restaurant restaurant, Admin admin, Item item) {
-        Utils.ExitCondition active = new Utils.ExitCondition();
+}
+public static class RemoveItem implements Screen{
+    private Admin admin;
+    private Item item;
+    
+    public RemoveItem(Admin admin, Item item) {
+        this.admin = admin;
+        this.item = item;
+    }
+
+    public Screen run(Term term, Restaurant restaurant) {
         term.clear();
                         
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -204,16 +256,23 @@ public class AdminUI {
         List<Utils.Line> lines = new ArrayList<>(List.of(
             new Utils.Button("Yes", () -> {
                 restaurant.getMenu().removeItem(item);
-                active.stop();
+                return new ViewItem(admin, item);
             }),
             new Utils.Button("No", () -> {
-                active.stop();
+                return new ViewItem(admin, item);
             })
         ));
-        Utils.loop(title, lines, term, active);
+        return Utils.loop(title, lines, term);
     }
-    public static void viewOrders(Term term, Restaurant restaurant, Admin admin) {
-        Utils.ExitCondition active = new Utils.ExitCondition();
+}
+public static class ViewOrders implements Screen{
+    private Admin admin;
+    
+    public ViewOrders(Admin admin) {
+        this.admin = admin;
+    }
+
+    public Screen run(Term term, Restaurant restaurant) {
         term.clear();
                         
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -225,25 +284,34 @@ public class AdminUI {
         lines.add(new Utils.Text("Order Queue: "));
         for (Order order : restaurant.getOrderQueue()) {
             lines.add(new Utils.Button(order.getId().toString(), () -> {
-                viewOrder(term, restaurant, admin, order);
+                return new viewOrder(admin, order);
             }));
         }
         lines.add(new Utils.Text("Active Orders: "));
         for ( Driver driver : restaurant.getDrivers() ) {
             for ( Order order : driver.getOrders()) {
                 lines.add(new Utils.Button(order.getId().toString(), () -> {
-                viewOrder(term, restaurant, admin, order);
+                return new viewOrder(admin, order);
                 }));
             }
         }
         lines.add(new Utils.Button("Exit", () -> {
-            active.stop();
+            return new AdminHome(admin);
         }));
 
-        Utils.loop(title, lines, term, active);
+        return Utils.loop(title, lines, term);
     }
-    public static void viewOrder(Term term, Restaurant restaurant, Admin admin, Order order) {
-        Utils.ExitCondition active = new Utils.ExitCondition();
+}
+public static class ViewOrder implements Screen{
+    private Admin admin;
+    private Order order;
+    
+    public ViewOrder(Admin admin, Order order) {
+        this.admin = admin;
+        this.order = order;
+    }
+
+    public Screen run(Term term, Restaurant restaurant) {
         term.clear();
 
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -256,8 +324,9 @@ public class AdminUI {
         ));
         List<Utils.Line> lines = new ArrayList<>();
         lines.add(new Utils.Button("Exit", () -> {
-            active.stop();
+            return new ViewOrders(admin);
         }));
-        Utils.loop(title, lines, term, active, 6);
+        return Utils.loop(title, lines, term, 6);
     }
+}
 }

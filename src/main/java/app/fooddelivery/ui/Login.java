@@ -10,6 +10,7 @@ import app.fooddelivery.object.User;
 import app.fooddelivery.service.Restaurant;
 import app.fooddelivery.ui.Utils.Term;
 import app.fooddelivery.ui.Utils.Screen;
+import app.fooddelivery.ui.CustomerUI.*;
 
 
 public class Login implements Screen{
@@ -29,7 +30,7 @@ public class Login implements Screen{
         lines.add(username);
         lines.add(password);
         Utils.Text error = new Utils.Text("Invalid Login: Please try again");
-        lines.add(new Utils.Button("Login", (Utils.Action) -> {
+        lines.add(new Utils.Button("Login", () -> {
                 String user = username.getInput();
                 String pass = password.getInput();
 
@@ -39,7 +40,7 @@ public class Login implements Screen{
 
                     if (u instanceof Customer) {
                         Customer c = (Customer) u;
-                        return new (c);
+                        return new CustomerHome(c);
                     }
 
                     if (u instanceof Driver) {

@@ -11,10 +11,19 @@ import app.fooddelivery.object.QuantizedItem;
 import app.fooddelivery.object.Rating;
 import app.fooddelivery.service.Restaurant;
 import app.fooddelivery.ui.Utils.Term;
+import app.fooddelivery.ui.Utils.Screen;
 
 
 public class CustomerUI {
-    public Screen home(Term term, Restaurant restaurant, Customer customer) {
+public static class CustomerHome implements Screen { 
+    private final Customer customer;
+        
+    public CustomerHome(Customer customer) {
+        this.customer = customer;
+    }
+
+    @Override
+    public Screen run(Term term, Restaurant restaurant) {
         Utils.ExitCondition active = new Utils.ExitCondition();
         term.clear();
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -22,24 +31,28 @@ public class CustomerUI {
             new Utils.Text("WELCOME " + customer.getName())      
         ));
                 
-        List<Utils.Line> lines = new ArrayList<>(List.of(
-            new Utils.Button("Place Order", () -> {
-                placeOrder(term, restaurant, customer);
-                term.clear();
-            }),
-            new Utils.Button("View Order History", () -> {
-                viewOrderHistory(term, restaurant, customer);
-                term.clear();
-            }),
-            new Utils.Button("Exit", () -> {
-                active.stop();
-            })
-        ));
-            Utils.loop(title, lines, term, active);
+        List<Utils.Line> lines = new ArrayList<>();
+            lines.add(new Utils.Button("Place Order", () -> {
+                return new PlaceOrder(customer);
+            }));
+            lines.add(new Utils.Button("View Order History", () -> {
+                return new ViewOrderHistory(customer);
+            }));
+            lines.add(new Utils.Button("Exit", () -> {
+                return new Login();
+            }));
+        return Utils.loop(title, lines, term);
+    }
+}
+
+public static class PlaceOrder implements Screen {
+    private Customer customer;
+
+    public PlaceOrder(Customer customer) {
+        this.customer = customer;
     }
 
-    public static void placeOrder(Term term, Restaurant restaurant, Customer customer) {
-        Utils.ExitCondition active = new Utils.ExitCondition();
+    public Screen run(Term term, Restaurant restaurant) {
         term.clear();
 
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -50,59 +63,74 @@ public class CustomerUI {
         Menu menu = restaurant.getMenu();
         
         List<Utils.Line> lines = new ArrayList<>();
-        List<QuantizedItem> items = new ArrayList<>();
+        List<Utils.Amount> amounts = new ArrayList<>();
         
         for (Item item : menu.getItems()) {
             Utils.Amount line = new Utils.Amount(item.getName() + " --- " + item.getDescription()+ " --- $" + item.getPrice());
             lines.add(line);
-            QuantizedItem qItem = new QuantizedItem(item, line.quantity());
-            items.add(qItem);
+            amounts.add(line);
         }
-        // TODO Move qItem out of for loop somehow
 
         lines.add(new Utils.Button("Place Order", () -> {
                 Order o = new Order(customer);
-                for ( QuantizedItem item : items) o.addQuantizedItem(item);
+                
+                for ( int i = 0; i < amounts.size(); i++){
+                    int amount = amounts.get(i).quantity();
+                    if (amount > 0) {
+                        o.addQuantizedItem(new QuantizedItem(
+                            menu.getItems().get(i), amount
+                        ));
+                    }
+                }
                 restaurant.addOrder(o);
                 restaurant.update();
                 customer.addOrder(o);
                 // Write all orders to file for transaction history
-                active.stop();
+                return new CustomerHome(customer);
             }));
         lines.add(new Utils.Button("Exit", () -> {
-            active.stop();
-            })
-        );
-        
-        Utils.loop(title, lines, term, active);
+                return new CustomerHome(customer);
+            }));
+        return Utils.loop(title, lines, term);
     }
-
-    public static void viewOrderHistory(Term term, Restaurant restaurant, Customer customer) {
-        Utils.ExitCondition active = new Utils.ExitCondition();
+}
+public static class ViewOrderHistory implements Screen {
+    private Customer customer;
+    
+    public ViewOrderHistory(Customer customer) {
+        this.customer = customer;
+    }
+    public Screen run(Term term, Restaurant restaurant) {
         term.clear();
 
-        List<Utils.Line> tilte = new ArrayList<>(List.of(
+        List<Utils.Line> title = new ArrayList<>(List.of(
             new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
             new Utils.Text(customer.getName() + "'s Order History")
         ));
         List<Utils.Line> lines = new ArrayList<>();
 
         for (Order order : customer.getOrderHistory()) {
-            lines.add(new Utils.Button(order.getId().toString(), () -> {
-                viewOrder(term, restaurant, customer, order);
-                term.clear();
+            lines.add(new Utils.Button(order.getId().toString(), (Action) () -> {
+                return new ViewOrder(customer, order);
             }));
         }
-        lines.add(new Utils.Button("Exit", () -> {
-            active.stop();
+        lines.add(new Utils.Button("Exit", (Action) () -> {
+            return new CustomerHome(customer);
         }));
 
-        Utils.loop(tilte, lines, term, active);
+        return Utils.loop(title, lines, term);
 
     }
-    
-    public static void viewOrder(Term term, Restaurant restaurant, Customer customer, Order order) {
-        Utils.ExitCondition active = new Utils.ExitCondition();
+}
+public static class ViewOrder implements Screen {
+    private Customer customer;
+    private Order order;
+
+    public ViewOrder(Customer customer, Order order) {
+        this.customer = customer;
+        this.order = order;
+    }
+    public Screen run(Term term, Restaurant restaurant) {
         term.clear();
 
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -116,18 +144,25 @@ public class CustomerUI {
         List<Utils.Line> lines = new ArrayList<>();
         if (order.getStatus() == Order.Status.DELIVERED) {
             lines.add(new Utils.Button("Rate Driver", () -> {
-                    rateOrder(term, restaurant, customer, order);
-                    term.clear();
+                    return new RateOrder(customer, order);
                 }));
             }
         lines.add(new Utils.Button("Exit", () -> {
-            active.stop();
+            return new ViewOrderHistory(customer);
         }));
-        Utils.loop(title, lines, term, active, 6);
+        return Utils.loop(title, lines, term, 6);
+    }
+}
+public static class RateOrder implements Screen{
+    private Customer customer;
+    private Order order;
+    
+    public RateOrder(Customer customer, Order order) {
+        this.customer = customer;
+        this.order = order;
     }
 
-    public static void rateOrder(Term term, Restaurant restaurant, Customer customer, Order order) {
-        Utils.ExitCondition active = new Utils.ExitCondition();
+    public Screen run(Term term, Restaurant restaurant) {
         term.clear();
 
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -139,12 +174,11 @@ public class CustomerUI {
         Utils.Button enter = new Utils.Button("Submit Rating", () -> {
             Rating rating = new Rating(customer, rate.quantity());
             restaurant.addRating(rating);
-            active.stop();
+            return new ViewOrder(customer, order);
         });
         lines.add(rate);
         lines.add(enter);
-        Utils.loop(title, lines, term, active);
+        return Utils.loop(title, lines, term);
     }
-
-    
+}    
 }

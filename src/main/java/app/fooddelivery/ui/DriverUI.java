@@ -8,10 +8,17 @@ import app.fooddelivery.object.Order;
 import app.fooddelivery.object.Rating;
 import app.fooddelivery.service.Restaurant;
 import app.fooddelivery.ui.Utils.Term;
+import app.fooddelivery.ui.Utils.Screen;
 
 
 public class DriverUI {
-    public static void home(Term term, Restaurant restaurant, Driver driver) {
+public static class DriverHome implements Screen{
+    private Driver driver;
+
+    public DriverHome(Driver driver) {
+        this.driver = driver;
+    }
+    public Screen run(Term term, Restaurant restaurant) {
         Utils.ExitCondition active = new Utils.ExitCondition();
         term.clear();
                         
@@ -22,22 +29,25 @@ public class DriverUI {
         
         List<Utils.Line> lines = new ArrayList<>(List.of(
             new Utils.Button("View Orders", () -> {
-                viewActiveOrders(term, restaurant, driver);
-                term.clear();
+                return new ViewActiveOrders(driver);
             }),
             new Utils.Button("View Rates", () -> {
-                viewRates(term, restaurant, driver);
-                term.clear();
+                return new ViewRates(driver);
             }),
             new Utils.Button("Exit", () -> {
-                active.stop();
+                return new Login();
             })
         ));
-            Utils.loop(title, lines, term, active);
+            return Utils.loop(title, lines, term);
     }
+}
+public static class ViewActiveOrders implements Screen {
+    private Driver driver;
 
-    public static void viewActiveOrders(Term term, Restaurant restaurant, Driver driver) {
-        Utils.ExitCondition active = new Utils.ExitCondition();
+    public ViewAciveOrders(Driver driver) {
+        this.driver = driver;
+    }
+    public Screen run(Term term, Restaurant restaurant) {
         term.clear();
 
         List<Utils.Line> tilte = new ArrayList<>(List.of(
@@ -49,19 +59,24 @@ public class DriverUI {
         for (Order order : driver.getOrders()) {
             lines.add(new Utils.Button(order.getId().toString() + " " + order.getStatus(), () -> {
                 viewOrder(term, restaurant, driver, order);
-                term.clear();
             }));
         }
         lines.add(new Utils.Button("Exit", () -> {
-            term.clear();
-            active.stop();
+            return new DriverHome(driver);
         }));
 
-        Utils.loop(tilte, lines, term, active);
+        return Utils.loop(tilte, lines, term);
     }
+}
+public static class ViewOrder implements Screen{
+    private Driver driver;
+    private Order order;
 
-    public static void viewOrder(Term term, Restaurant restaurant, Driver driver, Order order) {
-        Utils.ExitCondition active = new Utils.ExitCondition();
+    public ViewOrder(Driver driver, Order order) {
+        this.driver = driver;
+        this.order = order;
+    }
+    public Screen run(Term term, Restaurant restaurant) {
         term.clear();
 
         List<Utils.Line> title = new ArrayList<>(List.of(
@@ -75,23 +90,29 @@ public class DriverUI {
         if (order.getStatus() == Order.Status.ACCEPTED) {
             lines.add(new Utils.Button("Update to In-Progress", () -> {
                     order.updateStatus(Order.Status.INPROGRESS);
-                    active.stop();
+                    return new ViewActiveOrders(driver);
             }));
         }
         if (order.getStatus() == Order.Status.INPROGRESS) {
             lines.add(new Utils.Button("Update to Delivered", () -> {
                     order.updateStatus(Order.Status.DELIVERED);
                     restaurant.update();
-                    active.stop();
+                    return new ViewActiveOrders(driver);
             }));
         }
         lines.add(new Utils.Button("Exit", () -> {
-            active.stop();
+            return new ViewActiveOrders(driver);
         }));
-        Utils.loop(title, lines, term, active, 6);
+        return Utils.loop(title, lines, term, 6);
     }
-    public static void viewRates(Term term, Restaurant restaurant, Driver driver) {
-        Utils.ExitCondition active = new Utils.ExitCondition();
+}
+public static class ViewRates implements Screen{
+    private Driver driver;
+
+    public ViewRates(Driver driver) {
+        this.driver = driver;
+    }
+    public Screen run(Term term, Restaurant restaurant) {
         term.clear();
 
         List<Utils.Line> tilte = new ArrayList<>(List.of(
@@ -104,10 +125,10 @@ public class DriverUI {
             lines.add(new Utils.Text(rate.toString()));
         }
         lines.add(new Utils.Button("Exit", () -> {
-            active.stop();
+            return new DriverHome(driver);
         }));
 
-        Utils.loop(tilte, lines, term, active);
+        return Utils.loop(tilte, lines, term);
     }
-
+}
 }
