@@ -37,15 +37,10 @@ public class Main {
         while (current != null) {
             current = current.run(term, restaurant);
         }
-    //    try {
-    //        Login.run(term, restaurant);        
-    //    } catch(Exception e) {
-    //        e.printStackTrace();
-    //    }finally{
-            try {
-				StateLoader.saveTo(stateFileTarget,state);
-			} catch (IOException e) {
-				System.err.println("Failed to save!");
-			}
-        }
+        try {
+			StateLoader.saveTo(stateFileTarget,state);
+		} catch (IOException e) {
+			System.err.println("Failed to save!");
+		}
     }
+}
