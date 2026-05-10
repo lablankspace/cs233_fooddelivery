@@ -1,11 +1,5 @@
 package app.fooddelivery.object;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
-
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.UUID;
 

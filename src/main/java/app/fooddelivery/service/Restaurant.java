@@ -17,7 +17,6 @@ import app.fooddelivery.object.User;
 
 
 
-
 public class Restaurant {
     private final State state;
 
@@ -105,13 +104,50 @@ public class Restaurant {
     }
     public Order nextOrder() { return state.orderQueue.poll();}
     public void update() {
-        DriverAssignment.assignDriver(this);
+        assignDriver();
     }
     public Collection<Order> getOrderQueue() {
         return Collections.unmodifiableCollection(state.orderQueue);
     }
-    public void addRating(Rating rate) {
-        // TODO send to driver assingment or something to store rates
+    public void addRating(Order order, Rating rate) {
+        for ( Driver d : getDrivers()) {
+            for ( Order o : d.getOrders()) {
+                if ( order.equals(o)) {
+                    d.addRate(rate);
+                }
+            }
+        }
+    }
+    public void assignDriver() {
+        Order order = nextOrder();
+        if (order == null) return;
+        Driver driver = findDriver();
+        if (driver == null) assignDriver();
+        order.updateStatus(Order.Status.ACCEPTED);
+        driver.addOrder(order);
+    }
+    public Driver findDriver() {
+        Driver best = null;
+        for ( Driver driver : getDrivers()) {
+            if (driver.getStatus() == Driver.Status.FREE) {
+                if (best == null || driver.averageRate() > best.averageRate()) {
+                    best = driver;
+                }
+            }
+        }
+        return best;
+    }
+    public int checkLogin(String user, String pass) {
+        if (containsUser(user)) {
+            User u = getUser(user);
+            if (pass.equals(user)) {
+                if (u.getRole().equals("Admin")) return 0;
+                if (u.getRole().equals("Driver")) return 1;
+                else return 2;
+            }
+            else return 3;
+        }
+        else return 3;
     }
     
 }

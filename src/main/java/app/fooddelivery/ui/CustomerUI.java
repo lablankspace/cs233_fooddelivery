@@ -158,7 +158,7 @@ public static class RateOrder implements Screen{
         Utils.Amount rate = new Utils.Amount("1 to 5", 1, 5);
         Utils.Button enter = new Utils.Button("Submit Rating", () -> {
             Rating rating = new Rating(customer, rate.quantity());
-            restaurant.addRating(rating);
+            restaurant.addRating(order, rating);
             return new ViewOrder(customer, order);
         });
         lines.add(rate);

@@ -90,7 +90,7 @@ public static class AddItem implements Screen{
                 double priceD = Double.parseDouble(price.getInput());
                 Item item = new Item(name.getInput(), desc.getInput(), priceD);
                 restaurant.getMenu().addItem(item);
-                return new ViewOrders(admin);
+                return new ViewMenu(admin);
             } catch (NumberFormatException e) {
                 return new AddItem(admin);
             }

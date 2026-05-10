@@ -1,8 +1,12 @@
 package app.fooddelivery.object;
 
-import com.google.gson.*;
-
 import java.lang.reflect.Type;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
 public class Serialization {
     public static class StateSerializer implements JsonSerializer<State> {
@@ -85,7 +89,7 @@ public class Serialization {
             obj.addProperty("id",driver.getId().toString());
             obj.addProperty("role",driver.getRole());
             obj.addProperty("phash",driver.getPasswordHashHex());
-            obj.add("ratings", context.serialize(driver.ratings));
+            obj.add("ratings", context.serialize(driver.getRates()));
 
             return obj;
         }

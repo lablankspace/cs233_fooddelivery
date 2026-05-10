@@ -9,21 +9,6 @@ public class Admin extends User{
     public Admin(String name, String password) {
         this(name, UUID.randomUUID(), password);
     }
-    private void addItem(Item item) {
-
-    } 
-    private void removeItem(Item item) {
-    
-    }
-    private void updateItem(Item item, Double price) {
-
-    }
-    private void viewAllOrders() {
-     
-    }
-    private void viewDriverRate(Driver driver) {
-
-    }
     @Override
     public String getRole() {
         return "Admin";
