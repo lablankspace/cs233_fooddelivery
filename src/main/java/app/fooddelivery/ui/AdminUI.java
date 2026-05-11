@@ -9,6 +9,9 @@ import app.fooddelivery.object.Item;
 import app.fooddelivery.object.Menu;
 import app.fooddelivery.object.Order;
 import app.fooddelivery.service.Restaurant;
+import app.fooddelivery.ui.AdminUI.ViewItem;
+import app.fooddelivery.ui.AdminUI.ViewMenu;
+import app.fooddelivery.ui.AdminUI.ViewOrders;
 import app.fooddelivery.ui.Utils.Screen;
 import app.fooddelivery.ui.Utils.Term;
 
@@ -92,7 +95,7 @@ public static class AddItem implements Screen{
                 restaurant.getMenu().addItem(item);
                 return new ViewMenu(admin);
             } catch (NumberFormatException e) {
-                return new AddItem(admin);
+                return new AddItemError(admin);
             }
         }));
         lines.add(new Utils.Button("Exit", () -> {
@@ -101,6 +104,46 @@ public static class AddItem implements Screen{
         return Utils.loop(title, lines, term);
     }
 }
+public static class AddItemError implements Screen{
+    private final Admin admin;
+
+    public AddItemError(Admin admin) {
+        this.admin = admin;
+    }
+
+    public Screen run(Term term, Restaurant restaurant) {
+        term.clear();
+                        
+        List<Utils.Line> title = new ArrayList<>(List.of(
+            new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
+            new Utils.Text("Create new Menu Item"),
+            new Utils.Text("Error: Price must be a double(ex: 5.20)")
+        ));
+
+        List<Utils.Line> lines = new ArrayList<>();
+        Utils.Input name = new Utils.Input("Item Name: ", false);
+        Utils.Input desc = new Utils.Input("Item Description: ", false);
+        Utils.Input price = new Utils.Input("Price: ", false);
+        lines.add(name);
+        lines.add(desc);
+        lines.add(price);
+        lines.add(new Utils.Button("Add Item", () -> {
+            try {
+                double priceD = Double.parseDouble(price.getInput());
+                Item item = new Item(name.getInput(), desc.getInput(), priceD);
+                restaurant.getMenu().addItem(item);
+                return new ViewMenu(admin);
+            } catch (NumberFormatException e) {
+                return new AddItemError(admin);
+            }
+        }));
+        lines.add(new Utils.Button("Exit", () -> {
+            return new ViewOrders(admin);
+        }));
+        return Utils.loop(title, lines, term);
+    }
+}
+
 public static class ViewItem implements Screen{
     private final Admin admin;
     private final Item item;
@@ -216,7 +259,42 @@ public static class EditPrice implements Screen{
                 item.editPrice(priceD);
                 return new ViewItem(admin, item);
             } catch (NumberFormatException e) {
-                return new EditPrice(admin, item);
+                return new EditPriceError(admin, item);
+            }
+        }));
+        lines.add(new Utils.Button("Exit", () -> new ViewItem(admin, item)));
+
+        return Utils.loop(title, lines, term);
+    }
+}
+public static class EditPrice implements Screen{
+    private final Admin admin;
+    private final Item item;
+    
+    public EditPrice(Admin admin, Item item) {
+        this.admin = admin;
+        this.item = item;
+    }
+
+    public Screen run(Term term, Restaurant restaurant) {
+        term.clear();
+                        
+        List<Utils.Line> title = new ArrayList<>(List.of(
+            new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
+            new Utils.Text("Editing " + item.getName() + "'s Price"),
+            new Utils.Text("Price must be a double(5.20)")
+        ));
+        
+        List<Utils.Line> lines = new ArrayList<>();
+        Utils.Input price = new Utils.Input("New Price: ", false);
+        lines.add(price);
+        lines.add(new Utils.Button("Save Price", () -> {
+            try {
+                double priceD = Double.parseDouble(price.getInput());
+                item.editPrice(priceD);
+                return new ViewItem(admin, item);
+            } catch (NumberFormatException e) {
+                return new EditPriceError(admin, item);
             }
         }));
         lines.add(new Utils.Button("Exit", () -> new ViewItem(admin, item)));
