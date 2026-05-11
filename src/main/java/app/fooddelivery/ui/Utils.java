@@ -10,16 +10,23 @@ import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
 
+import app.fooddelivery.service.Restaurant;
+
 public class Utils {
+        public interface Screen {
+                Screen run(Term term, Restaurant restaurant);
+        }
         interface Line {
                 String render(boolean selected);
                 void onKey(KeyStroke key);
         }
         interface Action {
-                void run();
+                Screen run();
         }
-        public static class exitCondition {
-                boolean condition = true;
+        public static class ExitCondition {
+                private boolean running = true;
+                public void stop() { running = false; }
+                public boolean isRunning() { return running; }
         }
         public static class Term {
                 private Terminal terminal;
@@ -85,6 +92,7 @@ public class Utils {
         public static class Button implements Line {
                 private String label;
                 private Action action;
+                private Screen result = null;
                 Button(String label, Action action) {
                         this.label = label;
                         this.action = action;
@@ -96,8 +104,13 @@ public class Utils {
                 
                 public void onKey(KeyStroke key) {
                         if (key.getKeyType() == KeyType.Enter) {
-                                action.run();
+                                result = action.run();
                         }
+                }
+                public Screen result() {
+                        Screen temp = result;
+                        result = null;
+                        return temp;
                 }
         }
         public static class Amount implements Line {
@@ -177,7 +190,6 @@ public class Utils {
                 if (key.getKeyType() == KeyType.ArrowDown) selection++;
                 else if (key.getKeyType() == KeyType.ArrowUp) selection--;
                 else if (key.getKeyType() == KeyType.Enter && (lines.get(selection) instanceof Utils.Input || lines.get(selection) instanceof Utils.Amount)) selection++;
-                else  { lines.get(selection).onKey(key);} 
                 
                 if (selection < 0) selection = lines.size() - 1;
                 if (selection >= lines.size()) selection = 0;
@@ -185,7 +197,7 @@ public class Utils {
 
                 return selection;
         }
-        public static void loop(List<Line> title, List<Line> lines, Term term, exitCondition active) {
+        public static Screen loop(List<Line> title, List<Line> lines, Term term) {
                 int selection = 0;
 
                 render(title, -1, term.size(), term.text(), 0);
@@ -193,13 +205,54 @@ public class Utils {
 
                 term.flush();
 
-                while (active.condition) {
+                while (true) {
                         KeyStroke key = term.readKey();
+
+                        Line current = lines.get(selection);
+                        current.onKey(key);
+
+                        if (current instanceof Button) {
+                                Button b = (Button) current;
+                                Screen next = b.result();
+                                if (next != null) {
+                                        return next; // 🔥 EXIT LOOP HERE
+                                }
+                        }
 
                         selection = keyPress(selection, key, lines);
 
                         render(title, -1, term.size(), term.text(), 0);
                         render(lines, selection, term.size(), term.text(), 3);
+
+                        term.flush();
+                }
+        }
+        public static Screen loop(List<Line> title, List<Line> lines, Term term, int y) {
+                int selection = 0;
+
+                render(title, -1, term.size(), term.text(), 0);
+                render(lines, selection, term.size(), term.text(), y);
+
+                term.flush();
+
+                while (true) {
+                        KeyStroke key = term.readKey();             
+
+                        Line current = lines.get(selection);
+                        current.onKey(key);
+
+                        if (current instanceof Button) {
+                                Button b = (Button) current;
+                                Screen next = b.result();
+                                if (next != null) {
+                                        return next; // 🔥 EXIT LOOP HERE
+                                }
+                        }
+                        
+                        selection = keyPress(selection, key, lines);
+
+                        render(title, -1, term.size(), term.text(), 0);
+                        render(lines, selection, term.size(), term.text(), y);
 
                         term.flush();
                 }

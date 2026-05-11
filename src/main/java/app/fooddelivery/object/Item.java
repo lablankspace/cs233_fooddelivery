@@ -4,10 +4,10 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class Item {
-    private final String name;
-    private final String description;
-    private final double price;
-    private final UUID id;
+    private String name;
+    private String description;
+    private double price;
+    private UUID id;
     protected Item(String name, String description, double price, UUID id) {
         this.name = name;
         this.description = description;
@@ -28,6 +28,15 @@ public class Item {
     }
     public UUID getId() {
         return id;
+    }
+    public void editName(String name) {
+        this.name = name;
+    }
+    public void editDescription(String description) {
+        this.description = description;
+    }
+    public void editPrice(double price) {
+        this.price = price;
     }
 
     @Override

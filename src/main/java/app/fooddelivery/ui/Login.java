@@ -3,48 +3,56 @@ package app.fooddelivery.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import app.fooddelivery.object.Admin;
+import app.fooddelivery.object.Customer;
+import app.fooddelivery.object.Driver;
+import app.fooddelivery.object.User;
 import app.fooddelivery.service.Restaurant;
+import app.fooddelivery.ui.AdminUI.AdminHome;
+import app.fooddelivery.ui.CustomerUI.CustomerHome;
+import app.fooddelivery.ui.DriverUI.DriverHome;
+import app.fooddelivery.ui.Utils.Screen;
 import app.fooddelivery.ui.Utils.Term;
 
 
-
-public class Login {
-        public static void run(Term term, Restaurant restaurant) {
-            Utils.exitCondition none = new Utils.exitCondition();
-            term.clear();
+public class Login implements Screen{
+    @Override
+    public Screen run(Term term, Restaurant restaurant) {
+        term.clear();
                         
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                new Utils.Text("PLEASE LOGIN")      
-            ));
-                        
-            int selection = 0;
+        List<Utils.Line> title = new ArrayList<>(List.of(
+            new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
+            new Utils.Text("PLEASE LOGIN")      
+        ));
 
+        Utils.Input username = new Utils.Input("Username: ", false);
+        Utils.Input password = new Utils.Input("Password: ", true);
 
-            Utils.Input username = new Utils.Input("Username", false);
-            Utils.Input password = new Utils.Input("Password", true);
+        List<Utils.Line> lines = new ArrayList<>();
+        lines.add(username);
+        lines.add(password);
+        Utils.Text error = new Utils.Text("Invalid Login: Please try again");
+        lines.add(new Utils.Button("Yes", () -> {
+                String user = username.getInput();
+                String pass = password.getInput();
 
-            List<Utils.Line> lines = new ArrayList<>(List.of(
-                username,
-                password,
-                new Utils.Button("Login", () -> {
-                    if (restaurant.getCustomer(username.getInput()) != null ) {
-                        if (restaurant.getCustomer(username.getInput()).checkPassword(password.getInput())) {
-                            CustomerUI.home(term, restaurant, restaurant.getCustomer(username.getInput()));
-                        }
-                        else {
-                            title.add(new Utils.Text("Invalid Login: Please try again"));
-                        } 
-                    } 
-                    else {
-                        title.add(new Utils.Text("Invalid Login: Please try again"));
+                User u = restaurant.getUser(user);
+                if(u != null && u.checkPassword(pass)) {
+                    if (u instanceof Customer) {
+                        return new CustomerHome((Customer) u);
                     }
-                }),
-                new Utils.Button("Exit", () -> {
-                    System.exit(0);
-                })
-                ));
+                    if ( u instanceof Driver) {
+                        return new DriverHome((Driver) u);
+                    }
+                    if ( u instanceof Admin) {
+                        return new AdminHome((Admin) u);
+                    }
+                    title.add(error);
+                }
+                return new Login();
+        }));
 
-            Utils.loop(title, lines, term, none);
+        lines.add(new Utils.Button("Exit", () -> null));
+        return Utils.loop(title, lines, term);
     }
 }
