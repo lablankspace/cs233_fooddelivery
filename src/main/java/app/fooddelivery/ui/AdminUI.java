@@ -267,11 +267,11 @@ public static class EditPrice implements Screen{
         return Utils.loop(title, lines, term);
     }
 }
-public static class EditPrice implements Screen{
+public static class EditPriceError implements Screen{
     private final Admin admin;
     private final Item item;
     
-    public EditPrice(Admin admin, Item item) {
+    public EditPriceError(Admin admin, Item item) {
         this.admin = admin;
         this.item = item;
     }
