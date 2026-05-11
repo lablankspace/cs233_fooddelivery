@@ -11,7 +11,8 @@ public class State {
     public final HashSet<Order> orders;
     public final Queue<Order> orderQueue;
     public final Menu menu;
-    public State(){
+
+    public State() {
         users = new HashMap<>();
         orders = new HashSet<>();
         orderQueue = new LinkedList<>();

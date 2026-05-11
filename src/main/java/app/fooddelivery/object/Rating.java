@@ -8,6 +8,7 @@ public class Rating {
     private int score;
     private String timestamp;
     private UUID creatorId;
+
     protected Rating(UUID creatorId, int score, String timestamp) {
         this.score = score;
         this.creatorId = creatorId;
@@ -15,18 +16,23 @@ public class Rating {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         timestamp = now.format(formatter);
     }
+
     protected Rating(UUID creatorId, int score) {
         this(creatorId, score, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     }
+
     public Rating(Customer from, int score) {
         this(from.getId(), score);
     }
+
     public int getScore() {
         return score;
     }
+
     public String getTimeStamp() {
         return timestamp;
     }
+
     @Override
     public String toString() {
         return ("Score: " + score + "::" + "Time: " + timestamp);

@@ -9,8 +9,10 @@ import java.util.Optional;
 
 public class StateLoader {
     private static Gson gson;
-    private static void initGsonIfNull(){
-        if (gson != null)return;
+
+    private static void initGsonIfNull() {
+        if (gson != null)
+            return;
         gson = new GsonBuilder()
                 .setPrettyPrinting()
                 // State
@@ -36,10 +38,11 @@ public class StateLoader {
                 .registerTypeAdapter(Rating.class, new Deserialization.UserRatingDeserializer())
                 .create();
     }
-    public static Optional<State> loadFrom(File file){
+
+    public static Optional<State> loadFrom(File file) {
         initGsonIfNull();
-        try (FileReader reader = new FileReader(file)){
-            return Optional.of(gson.fromJson(reader,State.class));
+        try (FileReader reader = new FileReader(file)) {
+            return Optional.of(gson.fromJson(reader, State.class));
         } catch (Exception e) {
             return Optional.empty();
         }
