@@ -18,20 +18,29 @@ public class Main {
     public static void main(String[] args) {
         File stateFileTarget = new File("state.json");
         State state = StateLoader.loadFrom(stateFileTarget).orElseGet(State::new);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Saving data...");
+            try {
+                StateLoader.saveTo(stateFileTarget, state);
+            } catch (IOException e) {
+                System.err.println("Failed to save!");
+            }
+        }));
         Restaurant restaurant = new Restaurant(state);
 
-        Customer c = new Customer("cust", "cust");
-        Driver d = new Driver("driv", "driv");
-        Admin a = new Admin("admin", "admin");
-        restaurant.addUser(c);
-        restaurant.addUser(d);
-        restaurant.addUser(a);
+        if (restaurant.getUsers().size() == 0){
+            Customer c = new Customer("cust", "cust");
+            Driver d = new Driver("driv", "driv");
+            Admin a = new Admin("admin", "admin");
+            restaurant.addUser(c);
+            restaurant.addUser(d);
+            restaurant.addUser(a);
 
-        Item burger = new Item("Burger", "A thing that Burgs", 12.50);
-        Item fries = new Item("Fries", "A thing that lies about being french", 5.00);
-        restaurant.getMenu().addItem(fries);
-        restaurant.getMenu().addItem(burger);
-
+            Item burger = new Item("Burger", "A thing that Burgs", 12.50);
+            Item fries = new Item("Fries", "A thing that lies about being french", 5.00);
+            restaurant.getMenu().addItem(fries);
+            restaurant.getMenu().addItem(burger);
+        }
         Term term = new Term();
         Screen current = new Login();
         while (current != null) {

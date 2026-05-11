@@ -9,9 +9,6 @@ import app.fooddelivery.object.Item;
 import app.fooddelivery.object.Menu;
 import app.fooddelivery.object.Order;
 import app.fooddelivery.service.Restaurant;
-import app.fooddelivery.ui.AdminUI.ViewItem;
-import app.fooddelivery.ui.AdminUI.ViewMenu;
-import app.fooddelivery.ui.AdminUI.ViewOrders;
 import app.fooddelivery.ui.Utils.Screen;
 import app.fooddelivery.ui.Utils.Term;
 
@@ -62,7 +59,7 @@ public class AdminUI {
                 lines.add(line);
             }
             lines.add(new Utils.Button("New Item", () -> new AddItem(admin)));
-            lines.add(new Utils.Button("Exit", () -> new LoginUI.Login()));
+            lines.add(new Utils.Button("Exit", () -> new AdminHome(admin)));
             return Utils.loop(title, lines, term);
         }
     }

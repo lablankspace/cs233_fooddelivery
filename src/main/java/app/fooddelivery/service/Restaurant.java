@@ -177,5 +177,4 @@ public class Restaurant {
         } else
             return 3;
     }
-
 }
