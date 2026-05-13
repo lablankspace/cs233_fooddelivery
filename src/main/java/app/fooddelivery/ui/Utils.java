@@ -18,7 +18,7 @@ public class Utils {
                 Screen run(Term term, Restaurant restaurant);
         }
 
-        interface Line {
+        public interface Line {
                 String render(boolean selected);
 
                 void onKey(KeyStroke key);
