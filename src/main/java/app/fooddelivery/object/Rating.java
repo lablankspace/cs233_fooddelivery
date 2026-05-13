@@ -14,7 +14,7 @@ public class Rating {
         this.creatorId = creatorId;
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        timestamp = now.format(formatter);
+        this.timestamp = now.format(formatter);
     }
 
     protected Rating(UUID creatorId, int score) {
@@ -35,7 +35,7 @@ public class Rating {
 
     @Override
     public String toString() {
-        return ("Score: " + score + "::" + "Time: " + timestamp);
+        return ("Score: " + score + " --- " + "Time: " + timestamp);
     }
 
     public UUID getCreatorId() {
