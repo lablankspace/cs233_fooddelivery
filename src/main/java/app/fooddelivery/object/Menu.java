@@ -3,7 +3,7 @@ package app.fooddelivery.object;
 import java.util.HashSet;
 
 public class Menu {
-    final private HashSet<Item> items;
+    private final HashSet<Item> items;
     Menu() {
         items = new HashSet<>();
     }

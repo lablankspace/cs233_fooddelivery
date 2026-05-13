@@ -52,6 +52,19 @@ public class Deserialization {
             return state;
         }
     }
+    public static class MenuDeserializer implements JsonDeserializer<Menu> {
+        @Override
+        public Menu deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject object = json.getAsJsonObject();
+            Menu menu = new Menu();
+            JsonArray items = object.getAsJsonArray("items");
+            for (JsonElement element : items) {
+                Item item = context.deserialize(element, Item.class);
+                menu.addItem(item);
+            }
+            return menu;
+        }
+    }
     public static class OrderDeserializer implements JsonDeserializer<Order> {
 
         @Override
@@ -68,6 +81,17 @@ public class Deserialization {
         public QuantizedItem deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject object = json.getAsJsonObject();
             return new QuantizedItem(UUID.fromString(object.get("itemId").getAsString()),object.get("quantity").getAsInt());
+        }
+    }
+    public static class ItemDeserializer implements JsonDeserializer<Item> {
+        @Override
+        public Item deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject object = json.getAsJsonObject();
+            String name = object.get("name").getAsString();
+            String description = object.get("description").getAsString();
+            Double price = object.get("price").getAsDouble();
+            UUID id = UUID.fromString(object.get("id").getAsString());
+            return new Item(name, description, price, id);
         }
     }
     public static class AdminDeserializer implements JsonDeserializer<Admin> {

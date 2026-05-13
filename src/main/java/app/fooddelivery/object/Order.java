@@ -7,9 +7,9 @@ public class Order {
 
     private Customer customer;
     private UUID customerId; // Used for deserialization post-processing
-    private ArrayList<QuantizedItem> items;
+    private final ArrayList<QuantizedItem> items;
     private Status status;
-    private UUID id;
+    private final UUID id;
 
     public Order(Customer customer) {
         this.customer = customer;
@@ -36,7 +36,7 @@ public class Order {
 
     public void removeItem(Item item) {
         for (QuantizedItem quantizedItem : items) {
-            if (quantizedItem.getItemId().equals(item)) {
+            if (quantizedItem.getItemId().equals(item.getId())) {
                 items.remove(quantizedItem);
                 return;
             }
@@ -82,5 +82,14 @@ public class Order {
     @Override
     public int hashCode() {
         return id.hashCode();
+    }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Order)) {
+            return false;
+        }
+        Order other = (Order) o;
+        return this.id.equals(other.id);
     }
 }

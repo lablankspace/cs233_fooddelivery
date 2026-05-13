@@ -144,8 +144,6 @@ public class Restaurant {
         if (order == null)
             return;
         Driver driver = findDriver();
-        if (driver == null)
-            assignDriver();
         order.updateStatus(Order.Status.ACCEPTED);
         driver.addOrder(order);
     }
@@ -165,7 +163,7 @@ public class Restaurant {
     public int checkLogin(String user, String pass) {
         if (containsUser(user)) {
             User u = getUser(user);
-            if (pass.equals(user)) {
+            if (u.checkPassword(pass)) {
                 if (u.getRole().equals("Admin"))
                     return 0;
                 if (u.getRole().equals("Driver"))

@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public abstract class User {
     private String name;
-    private UUID id;
+    private final UUID id;
     private final byte[] passwordHash;
 
     public User(String name, String password) {

@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public class Customer extends User {
     private final ArrayList<Order> orderHistory;
-    public Customer(String name, UUID id, String password) {
+    protected Customer(String name, UUID id, String password) {
         super(name, id, password);
         this.orderHistory = new ArrayList<>();
     }
@@ -18,7 +18,7 @@ public class Customer extends User {
     public Customer(String name, String password) {
         this(name, UUID.randomUUID(), password);
     }
-    public Customer(User u) {
+    protected Customer(User u) {
         super(u.getName(), u.getId(), u.getPasswordHash());
         orderHistory = new ArrayList<>();
     }
@@ -37,9 +37,6 @@ public class Customer extends User {
         }
         Rating rate = new Rating(this,rating);
         driver.addRate(rate);
-    }
-    public String viewOrderStatus(Order order) {
-        return "TODO";
     }
     public ArrayList<Order> getOrderHistory() {
         return orderHistory;

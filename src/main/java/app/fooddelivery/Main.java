@@ -28,7 +28,7 @@ public class Main {
         }));
         Restaurant restaurant = new Restaurant(state);
 
-        if (restaurant.getUsers().size() == 0){
+        if (restaurant.getUsers().isEmpty()){
             Customer c = new Customer("cust", "cust");
             Driver d = new Driver("driv", "driv");
             Admin a = new Admin("admin", "admin");

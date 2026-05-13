@@ -27,6 +27,17 @@ public class Serialization {
         }
     }
 
+    public static class MenuSerializer implements  JsonSerializer<Menu> {
+        @Override
+        public JsonElement serialize(Menu menu, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject obj = new JsonObject();
+
+            obj.add("items", context.serialize(menu.getItems()));
+
+            return obj;
+        }
+    }
+
     public static class OrderSerializer implements JsonSerializer<Order> {
 
         @Override
@@ -52,6 +63,22 @@ public class Serialization {
 
             return obj;
         }
+    }
+
+    public static class ItemSerializer implements JsonSerializer<Item> {
+        @Override
+        public JsonElement serialize(Item item, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject obj = new JsonObject();
+
+            obj.addProperty("name", item.getName());
+            obj.addProperty("description", item.getDescription());
+            obj.addProperty("price", item.getPrice());
+            obj.addProperty("id", item.getId().toString());
+
+
+            return obj;
+        }
+
     }
 
     public static class AdminSerializer implements JsonSerializer<Admin> {
