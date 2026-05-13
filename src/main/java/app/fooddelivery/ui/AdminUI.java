@@ -19,7 +19,7 @@ public class AdminUI {
         public AdminHome(Admin admin) {
             this.admin = admin;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
@@ -41,7 +41,7 @@ public class AdminUI {
         public ViewMenu(Admin admin) {
             this.admin = admin;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
@@ -70,7 +70,7 @@ public class AdminUI {
         public AddItem(Admin admin) {
             this.admin = admin;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
@@ -108,7 +108,7 @@ public class AdminUI {
         public AddItemError(Admin admin) {
             this.admin = admin;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
@@ -149,7 +149,7 @@ public class AdminUI {
             this.admin = admin;
             this.item = item;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
@@ -175,7 +175,7 @@ public class AdminUI {
             this.admin = admin;
             this.item = item;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
@@ -206,7 +206,7 @@ public class AdminUI {
             this.admin = admin;
             this.item = item;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
@@ -237,7 +237,7 @@ public class AdminUI {
             this.admin = admin;
             this.item = item;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
@@ -271,14 +271,14 @@ public class AdminUI {
             this.admin = admin;
             this.item = item;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
             List<Utils.Line> title = new ArrayList<>(List.of(
                     new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
                     new Utils.Text("Editing " + item.getName() + "'s Price"),
-                    new Utils.Text("Price must be a double(5.20)")));
+                    new Utils.Text("Error: Price must be a double(ex: 5.20)")));
 
             List<Utils.Line> lines = new ArrayList<>();
             Utils.Input price = new Utils.Input("New Price: ", false);
@@ -306,7 +306,7 @@ public class AdminUI {
             this.admin = admin;
             this.item = item;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
@@ -332,7 +332,7 @@ public class AdminUI {
         public ViewOrders(Admin admin) {
             this.admin = admin;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
@@ -341,11 +341,6 @@ public class AdminUI {
                     new Utils.Text("All active and inactive orders")));
 
             List<Utils.Line> lines = new ArrayList<>();
-            lines.add(new Utils.Text("Order Queue: "));
-            for (Order order : restaurant.getOrderQueue()) {
-                lines.add(new Utils.Button(order.getId().toString(), () -> new ViewOrder(admin, order)));
-            }
-            lines.add(new Utils.Text("Active Orders: "));
             for (Driver driver : restaurant.getDrivers()) {
                 for (Order order : driver.getOrders()) {
                     lines.add(new Utils.Button(order.getId().toString(), () -> new ViewOrder(admin, order)));
@@ -365,7 +360,7 @@ public class AdminUI {
             this.admin = admin;
             this.order = order;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 

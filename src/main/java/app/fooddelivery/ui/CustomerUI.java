@@ -44,7 +44,7 @@ public class CustomerUI {
         public PlaceOrder(Customer customer) {
             this.customer = customer;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
@@ -76,7 +76,7 @@ public class CustomerUI {
                 restaurant.addOrder(o);
                 restaurant.update();
                 customer.addOrder(o);
-                // Write all orders to file for transaction history
+                restaurant.writeOrder(o);
                 return new CustomerHome(customer);
             }));
             lines.add(new Utils.Button("Exit", () -> {
@@ -92,7 +92,7 @@ public class CustomerUI {
         public ViewOrderHistory(Customer customer) {
             this.customer = customer;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
@@ -118,7 +118,7 @@ public class CustomerUI {
             this.customer = customer;
             this.order = order;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
@@ -147,15 +147,17 @@ public class CustomerUI {
             this.customer = customer;
             this.order = order;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
             List<Utils.Line> title = new ArrayList<>(List.of(
                     new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("Rate Order " + order.getId().toString())));
+                    new Utils.Text("Rate Order " + order.getId().toString()),
+                    new Utils.Text("Rate 1 to 5")
+                ));
             List<Utils.Line> lines = new ArrayList<>();
-            Utils.Amount rate = new Utils.Amount("1 to 5", 1, 5);
+            Utils.Amount rate = new Utils.Amount("", 1, 5);
             Utils.Button enter = new Utils.Button("Submit Rating", () -> {
                 Rating rating = new Rating(customer, rate.quantity());
                 restaurant.addRating(order, rating);

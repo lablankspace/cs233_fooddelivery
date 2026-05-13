@@ -72,7 +72,13 @@ public class Deserialization {
             JsonObject object = json.getAsJsonObject();
             UUID id = UUID.fromString(object.get("id").getAsString());
             UUID customerId = UUID.fromString(object.get("customerId").getAsString());
-            return new Order(id,customerId);
+            Order o = new Order(id, customerId);
+            JsonArray items = object.getAsJsonArray("items");
+            for (JsonElement element : items) {
+                QuantizedItem item = context.deserialize(element, QuantizedItem.class);
+                o.addQuantizedItem(item);
+            }
+            return o;
         }
     }
     public static class QuantizedItemDeserializer implements JsonDeserializer<QuantizedItem> {

@@ -12,14 +12,13 @@ import app.fooddelivery.ui.Utils.Term;
 
 public class DriverUI {
     public static class DriverHome implements Screen {
-        private Driver driver;
+        private final Driver driver;
 
         public DriverHome(Driver driver) {
             this.driver = driver;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
-            Utils.ExitCondition active = new Utils.ExitCondition();
             term.clear();
 
             List<Utils.Line> title = new ArrayList<>(List.of(
@@ -35,12 +34,12 @@ public class DriverUI {
     }
 
     public static class ViewActiveOrders implements Screen {
-        private Driver driver;
+        private final Driver driver;
 
         public ViewActiveOrders(Driver driver) {
             this.driver = driver;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
@@ -60,14 +59,14 @@ public class DriverUI {
     }
 
     public static class ViewOrder implements Screen {
-        private Driver driver;
-        private Order order;
+        private final Driver driver;
+        private final Order order;
 
         public ViewOrder(Driver driver, Order order) {
             this.driver = driver;
             this.order = order;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
@@ -75,7 +74,6 @@ public class DriverUI {
                     new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
                     new Utils.Text("Order: " + order.getId().toString()),
                     new Utils.Text("Customer: " + order.getCustomer().getName()),
-                    new Utils.Text("ID: " + order.getId().toString()),
                     new Utils.Text("Status: " + order.getStatus().toString())));
             List<Utils.Line> lines = new ArrayList<>();
             if (order.getStatus() == Order.Status.ACCEPTED) {
@@ -99,12 +97,12 @@ public class DriverUI {
     }
 
     public static class ViewRates implements Screen {
-        private Driver driver;
+        private final Driver driver;
 
         public ViewRates(Driver driver) {
             this.driver = driver;
         }
-
+        @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 

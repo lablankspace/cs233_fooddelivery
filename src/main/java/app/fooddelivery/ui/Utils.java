@@ -27,18 +27,6 @@ public class Utils {
                 Screen run();
         }
 
-        public static class ExitCondition {
-                private boolean running = true;
-
-                public void stop() {
-                        running = false;
-                }
-
-                public boolean isRunning() {
-                        return running;
-                }
-        }
-
         public static class Term {
                 private Terminal terminal;
                 private TextGraphics text;
@@ -99,11 +87,11 @@ public class Utils {
                 Text(String label) {
                         this.label = label;
                 }
-
+                @Override
                 public String render(boolean selected) {
                         return label;
                 }
-
+                @Override
                 public void onKey(KeyStroke key) {
                 }
         }
@@ -117,11 +105,11 @@ public class Utils {
                         this.label = label;
                         this.action = action;
                 }
-
+                @Override
                 public String render(boolean selected) {
                         return (selected ? "> " : " ") + label;
                 }
-
+                @Override
                 public void onKey(KeyStroke key) {
                         if (key.getKeyType() == KeyType.Enter) {
                                 result = action.run();
@@ -136,7 +124,7 @@ public class Utils {
         }
 
         public static class Amount implements Line {
-                private String label;
+                private final String label;
                 private int quantity;
                 final int min;
                 final int max;
@@ -154,11 +142,11 @@ public class Utils {
                         this.min = min;
                         this.max = max;
                 }
-
+                @Override
                 public String render(boolean selected) {
                         return (selected ? "> " : " ") + label + " - " + quantity + " + ";
                 }
-
+                @Override
                 public void onKey(KeyStroke key) {
                         if (key.getKeyType() == KeyType.ArrowRight && quantity < max) {
                                 quantity++;
@@ -174,20 +162,20 @@ public class Utils {
         }
 
         public static class Input implements Line {
-                private String label;
+                private final String label;
                 private String value = "";
-                private boolean hidden;
+                private final boolean hidden;
 
                 Input(String label, boolean hidden) {
                         this.label = label;
                         this.hidden = hidden;
                 }
-
+                @Override
                 public String render(boolean selected) {
                         String display = hidden ? "*".repeat(value.length()) : value;
                         return (selected ? "> " : " ") + label + " " + display;
                 }
-
+                @Override
                 public void onKey(KeyStroke key) {
                         if (key.getKeyType() == KeyType.Character) {
                                 value += key.getCharacter();
@@ -201,7 +189,7 @@ public class Utils {
                         return value;
                 }
         }
-
+        
         public static void render(List<Line> lines, int selection, TerminalSize screenSize, TextGraphics text, int y) {
                 for (int i = 0; i < lines.size(); i++) {
                         String line = lines.get(i).render(i == selection);

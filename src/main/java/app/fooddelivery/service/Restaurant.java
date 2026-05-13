@@ -1,17 +1,26 @@
 package app.fooddelivery.service;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import app.fooddelivery.object.Admin;
 import app.fooddelivery.object.Customer;
+import app.fooddelivery.object.Deserialization;
 import app.fooddelivery.object.Driver;
 import app.fooddelivery.object.Menu;
 import app.fooddelivery.object.Order;
+import app.fooddelivery.object.QuantizedItem;
 import app.fooddelivery.object.Rating;
+import app.fooddelivery.object.Serialization;
 import app.fooddelivery.object.State;
 import app.fooddelivery.object.User;
 
@@ -123,6 +132,23 @@ public class Restaurant {
 
     public void update() {
         assignDriver();
+    }
+    
+    public void writeOrder(Order o) {
+        File file = new File("order.txt");
+        Gson gson = new GsonBuilder()
+                .setPrettyPrinting()
+                .registerTypeAdapter(Order.class, new Serialization.OrderSerializer())
+                .registerTypeAdapter(Order.class, new Deserialization.OrderDeserializer())
+                .registerTypeAdapter(QuantizedItem.class, new Serialization.QuantizedItemSerializer())
+                .registerTypeAdapter(QuantizedItem.class, new Deserialization.QuantizedItemDeserializer())
+                .create();
+        try {
+            FileWriter writer = new FileWriter(file);
+            gson.toJson(o, writer);
+        } catch (IOException e) {
+            System.err.println("Failed to save!");
+        }
     }
 
     public Collection<Order> getOrderQueue() {
