@@ -28,28 +28,20 @@ public class StateLoader {
             return;
         gson = new GsonBuilder()
                 .setPrettyPrinting()
-                // State
                 .registerTypeAdapter(State.class, new Serialization.StateSerializer())
                 .registerTypeAdapter(State.class, new Deserialization.StateDeserializer())
-                // Order
                 .registerTypeAdapter(Order.class, new Serialization.OrderSerializer())
                 .registerTypeAdapter(Order.class, new Deserialization.OrderDeserializer())
-                // QuantizedItemSerializer
                 .registerTypeAdapter(QuantizedItem.class, new Serialization.QuantizedItemSerializer())
                 .registerTypeAdapter(QuantizedItem.class, new Deserialization.QuantizedItemDeserializer())
-                // Item
                 .registerTypeAdapter(Item.class, new Serialization.ItemSerializer())
                 .registerTypeAdapter(Item.class, new Deserialization.ItemDeserializer())
-                // Admin
                 .registerTypeAdapter(Admin.class, new Serialization.AdminSerializer())
                 .registerTypeAdapter(Admin.class, new Deserialization.AdminDeserializer())
-                // Customer
                 .registerTypeAdapter(Customer.class, new Serialization.CustomerSerializer())
                 .registerTypeAdapter(Customer.class, new Deserialization.CustomerDeserializer())
-                // Driver
                 .registerTypeAdapter(Driver.class, new Serialization.DriverSerializer())
                 .registerTypeAdapter(Driver.class, new Deserialization.DriverDeserializer())
-                // UserRating
                 .registerTypeAdapter(Rating.class, new Serialization.UserRatingSerializer())
                 .registerTypeAdapter(Rating.class, new Deserialization.UserRatingDeserializer())
                 .create();

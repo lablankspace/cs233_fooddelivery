@@ -6,7 +6,7 @@ import java.util.UUID;
 public class Order {
 
     private Customer customer;
-    private UUID customerId; // Used for deserialization post-processing
+    private UUID customerId;
     private final ArrayList<QuantizedItem> items;
     private Status status;
     private final UUID id;
