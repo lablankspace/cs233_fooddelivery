@@ -147,7 +147,7 @@ public class Restaurant {
             FileWriter writer = new FileWriter(file);
             gson.toJson(o, writer);
         } catch (IOException e) {
-            System.err.println("Failed to save!");
+            System.err.println("Failed to save!"); // is this the best way to do this? maybe make a new screen instead
         }
     }
 

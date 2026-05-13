@@ -1,6 +1,7 @@
 package app.fooddelivery.object;
 
 import java.lang.reflect.Type;
+import java.util.Map;
 import java.util.UUID;
 
 import com.google.gson.JsonArray;
@@ -17,8 +18,9 @@ public class Deserialization {
         public State deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             State state = new State();
             JsonObject object = json.getAsJsonObject();
-            JsonArray users = object.getAsJsonArray("users");
-            for (JsonElement userElement : users){
+            JsonObject usersObj = object.getAsJsonObject("users");
+            for (Map.Entry<String, JsonElement> entry : usersObj.entrySet()) {
+                JsonElement userElement = entry.getValue();
                 String role = userElement.getAsJsonObject().get("role").getAsString();
                 Class<? extends User> type;
                 switch (role) {
@@ -37,32 +39,18 @@ public class Deserialization {
 
                 state.users.put(user.getId(), user);
             }
-            JsonArray orders = object.getAsJsonArray("orders");
-            for (JsonElement orderElement : orders){
-                Order order = context.deserialize(orderElement,Order.class);
-                for (User user : state.users.values()){
-                    if (!(user instanceof Customer))continue;
-                    if (order.getCustomerId().equals(user.getId())){
-                        order.setCustomer((Customer) user);
-                        break;
-                    }
-                }
-                state.orders.add(order);
+
+            JsonElement menuElement = object.get("menu");
+            Menu menu = context.deserialize(menuElement, Menu.class);
+            state.menu = menu;
+
+            JsonArray queue = object.getAsJsonArray("orderQueue");
+
+            for (JsonElement element : queue) {
+                Order order = context.deserialize(element, Order.class);
+            if (order != null) state.orderQueue.add(order);
             }
             return state;
-        }
-    }
-    public static class MenuDeserializer implements JsonDeserializer<Menu> {
-        @Override
-        public Menu deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            JsonObject object = json.getAsJsonObject();
-            Menu menu = new Menu();
-            JsonArray items = object.getAsJsonArray("items");
-            for (JsonElement element : items) {
-                Item item = context.deserialize(element, Item.class);
-                menu.addItem(item);
-            }
-            return menu;
         }
     }
     public static class OrderDeserializer implements JsonDeserializer<Order> {
@@ -121,7 +109,12 @@ public class Deserialization {
         @Override
         public Driver deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject object = json.getAsJsonObject();
-            return new Driver(object.get("name").getAsString(),UUID.fromString(object.get("id").getAsString()),hexToBytes(object.get("phash").getAsString()));
+            Driver driver = new Driver(object.get("name").getAsString(),UUID.fromString(object.get("id").getAsString()),hexToBytes(object.get("phash").getAsString()));
+            Rating[] ratings = context.deserialize(object.get("Rating"), Rating[].class);
+            for (Rating r : ratings) {
+                driver.addRate(r);
+            }
+            return driver;
         }
     }
     public static class UserRatingDeserializer implements JsonDeserializer<Rating> {

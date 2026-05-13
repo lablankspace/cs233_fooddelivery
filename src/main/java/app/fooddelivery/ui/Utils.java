@@ -1,5 +1,6 @@
 package app.fooddelivery.ui;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.googlecode.lanterna.TerminalSize;
@@ -38,8 +39,8 @@ public class Utils {
                                 this.terminal = defaultTerminalFactory.createTerminal();
                                 this.size = terminal.getTerminalSize();
                                 text = terminal.newTextGraphics().setForegroundColor(TextColor.ANSI.GREEN);
-                        } catch (Exception e) {
-                                throw new RuntimeException(e);
+                        } catch (IOException e) {
+                                System.err.println("Failed to create terminal");
                         }
                 }
 
@@ -58,24 +59,26 @@ public class Utils {
                 public KeyStroke readKey() {
                         try {
                                 return terminal.readInput();
-                        } catch (Exception e) {
-                                throw new RuntimeException(e);
+                        } catch (IOException e) {
+                                System.err.println("Failed to read terminal input");
+                                return null;
                         }
                 }
 
                 public void flush() {
                         try {
                                 terminal.flush();
-                        } catch (Exception e) {
-                                throw new RuntimeException(e);
+                        } catch (IOException e) {
+                                System.err.println("Failed to flush terminal");
                         }
                 }
 
                 public void clear() {
                         try {
                                 terminal.clearScreen();
-                        } catch (Exception e) {
-                                throw new RuntimeException(e);
+                        } catch (IOException e) {
+                                System.err.println("Failed to clear terminal");
+
                         }
                 }
 
@@ -235,7 +238,7 @@ public class Utils {
                                 Button b = (Button) current;
                                 Screen next = b.result();
                                 if (next != null) {
-                                        return next; // 🔥 EXIT LOOP HERE
+                                        return next;
                                 }
                         }
 
@@ -266,7 +269,7 @@ public class Utils {
                                 Button b = (Button) current;
                                 Screen next = b.result();
                                 if (next != null) {
-                                        return next; // 🔥 EXIT LOOP HERE
+                                        return next;
                                 }
                         }
 

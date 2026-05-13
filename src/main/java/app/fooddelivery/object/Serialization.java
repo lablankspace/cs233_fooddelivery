@@ -2,7 +2,6 @@ package app.fooddelivery.object;
 
 import java.lang.reflect.Type;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
@@ -16,23 +15,8 @@ public class Serialization {
             JsonObject obj = new JsonObject();
 
             obj.add("users", context.serialize(state.users));
-            obj.add("orders", context.serialize(state.orders));
-            JsonArray orderQueue = new JsonArray();
-            for (Order order : state.orderQueue) {
-                orderQueue.add(order.getId().toString());
-            }
-            obj.add("orderQueue", orderQueue);
-
-            return obj;
-        }
-    }
-
-    public static class MenuSerializer implements  JsonSerializer<Menu> {
-        @Override
-        public JsonElement serialize(Menu menu, Type typeOfSrc, JsonSerializationContext context) {
-            JsonObject obj = new JsonObject();
-
-            obj.add("items", context.serialize(menu.getItems()));
+            obj.add("menu", context.serialize(state.menu));
+            obj.add("orderQueue", context.serialize(state.orderQueue));
 
             return obj;
         }

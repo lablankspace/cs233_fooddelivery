@@ -1,6 +1,5 @@
 package app.fooddelivery.service;
 
-import java.awt.Menu;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -32,9 +31,6 @@ public class StateLoader {
                 // State
                 .registerTypeAdapter(State.class, new Serialization.StateSerializer())
                 .registerTypeAdapter(State.class, new Deserialization.StateDeserializer())
-                // Menu
-                .registerTypeAdapter(Menu.class, new Serialization.MenuSerializer())
-                .registerTypeAdapter(Menu.class, new Deserialization.MenuDeserializer())
                 // Order
                 .registerTypeAdapter(Order.class, new Serialization.OrderSerializer())
                 .registerTypeAdapter(Order.class, new Deserialization.OrderDeserializer())

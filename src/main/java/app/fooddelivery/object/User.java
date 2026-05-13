@@ -21,7 +21,7 @@ public abstract class User {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             passwordHash = digest.digest(password.getBytes());
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e);  // Lets try and remove this if possible
         }
     }
 
