@@ -11,8 +11,13 @@ import app.fooddelivery.service.Restaurant;
 import app.fooddelivery.ui.AdminUI.AdminHome;
 import app.fooddelivery.ui.CustomerUI.CustomerHome;
 import app.fooddelivery.ui.DriverUI.DriverHome;
+import app.fooddelivery.ui.Utils.Button;
+import app.fooddelivery.ui.Utils.Input;
+import app.fooddelivery.ui.Utils.Line;
 import app.fooddelivery.ui.Utils.Screen;
 import app.fooddelivery.ui.Utils.Term;
+import app.fooddelivery.ui.Utils.Text;
+
 
 public class LoginUI {
     public static class Login implements Screen {
@@ -20,17 +25,17 @@ public class LoginUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("PLEASE LOGIN")));
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("PLEASE LOGIN")));
 
-            Utils.Input username = new Utils.Input("Username: ", false);
-            Utils.Input password = new Utils.Input("Password: ", true);
+            Input username = new Input("Username: ", false);
+            Input password = new Input("Password: ", true);
 
-            List<Utils.Line> lines = new ArrayList<>();
+            List<Line> lines = new ArrayList<>();
             lines.add(username);
             lines.add(password);
-            lines.add(new Utils.Button("Yes", () -> {
+            lines.add(new Button("Yes", () -> {
                 String user = username.getInput();
                 String pass = password.getInput();
 
@@ -49,7 +54,7 @@ public class LoginUI {
                 return new LoginError();
             }));
 
-            lines.add(new Utils.Button("Exit", () -> new LoginExit()));
+            lines.add(new Button("Exit", () -> new LoginExit()));
             return Utils.loop(title, lines, term);
         }
     }
@@ -59,17 +64,17 @@ public class LoginUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("PLEASE LOGIN")));
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("PLEASE LOGIN")));
 
-            Utils.Input username = new Utils.Input("Username: ", false);
-            Utils.Input password = new Utils.Input("Password: ", true);
+            Input username = new Input("Username: ", false);
+            Input password = new Input("Password: ", true);
 
-            List<Utils.Line> lines = new ArrayList<>();
+            List<Line> lines = new ArrayList<>();
             lines.add(username);
             lines.add(password);
-            lines.add(new Utils.Button("Yes", () -> {
+            lines.add(new Button("Yes", () -> {
                 String user = username.getInput();
                 String pass = password.getInput();
 
@@ -88,7 +93,7 @@ public class LoginUI {
                 return new LoginError();
             }));
 
-            lines.add(new Utils.Button("Exit", () -> new LoginExit()));
+            lines.add(new Button("Exit", () -> new LoginExit()));
             return Utils.loop(title, lines, term);
         }
     }

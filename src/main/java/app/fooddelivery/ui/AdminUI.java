@@ -9,8 +9,13 @@ import app.fooddelivery.object.Item;
 import app.fooddelivery.object.Menu;
 import app.fooddelivery.object.Order;
 import app.fooddelivery.service.Restaurant;
+import app.fooddelivery.ui.Utils.Button;
+import app.fooddelivery.ui.Utils.Input;
+import app.fooddelivery.ui.Utils.Line;
 import app.fooddelivery.ui.Utils.Screen;
 import app.fooddelivery.ui.Utils.Term;
+import app.fooddelivery.ui.Utils.Text;
+
 
 public class AdminUI {
     public static class AdminHome implements Screen {
@@ -23,14 +28,14 @@ public class AdminUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("WELCOME " + admin.getName())));
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("WELCOME " + admin.getName())));
 
-            List<Utils.Line> lines = new ArrayList<>(List.of(
-                    new Utils.Button("View Menu", () -> new ViewMenu(admin)),
-                    new Utils.Button("View Orders", () -> new ViewOrders(admin)),
-                    new Utils.Button("Exit", () -> new LoginUI.Login())));
+            List<Line> lines = new ArrayList<>(List.of(
+                    new Button("View Menu", () -> new ViewMenu(admin)),
+                    new Button("View Orders", () -> new ViewOrders(admin)),
+                    new Button("Exit", () -> new LoginUI.Login())));
             return Utils.loop(title, lines, term);
         }
     }
@@ -45,21 +50,21 @@ public class AdminUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("Menu")));
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Menu")));
 
-            List<Utils.Line> lines = new ArrayList<>();
+            List<Line> lines = new ArrayList<>();
             Menu menu = restaurant.getMenu();
 
             for (Item item : menu.getItems()) {
-                Utils.Button line = new Utils.Button(
+                Button line = new Button(
                         item.getName() + " --- " + item.getDescription() + " --- $" + item.getPrice(),
                         () -> new ViewItem(admin, item));
                 lines.add(line);
             }
-            lines.add(new Utils.Button("New Item", () -> new AddItem(admin)));
-            lines.add(new Utils.Button("Exit", () -> new AdminHome(admin)));
+            lines.add(new Button("New Item", () -> new AddItem(admin)));
+            lines.add(new Button("Exit", () -> new AdminHome(admin)));
             return Utils.loop(title, lines, term);
         }
     }
@@ -74,18 +79,18 @@ public class AdminUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("Create new Menu Item")));
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Create new Menu Item")));
 
-            List<Utils.Line> lines = new ArrayList<>();
-            Utils.Input name = new Utils.Input("Item Name: ", false);
-            Utils.Input desc = new Utils.Input("Item Description: ", false);
-            Utils.Input price = new Utils.Input("Price: ", false);
+            List<Line> lines = new ArrayList<>();
+            Input name = new Input("Item Name: ", false);
+            Input desc = new Input("Item Description: ", false);
+            Input price = new Input("Price: ", false);
             lines.add(name);
             lines.add(desc);
             lines.add(price);
-            lines.add(new Utils.Button("Add Item", () -> {
+            lines.add(new Button("Add Item", () -> {
                 try {
                     double priceD = Double.parseDouble(price.getInput());
                     Item item = new Item(name.getInput(), desc.getInput(), priceD);
@@ -95,7 +100,7 @@ public class AdminUI {
                     return new AddItemError(admin);
                 }
             }));
-            lines.add(new Utils.Button("Exit", () -> {
+            lines.add(new Button("Exit", () -> {
                 return new ViewOrders(admin);
             }));
             return Utils.loop(title, lines, term);
@@ -112,19 +117,19 @@ public class AdminUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("Create new Menu Item"),
-                    new Utils.Text("Error: Price must be a double(ex: 5.20)")));
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Create new Menu Item"),
+                    new Text("Error: Price must be a double(ex: 5.20)")));
 
-            List<Utils.Line> lines = new ArrayList<>();
-            Utils.Input name = new Utils.Input("Item Name: ", false);
-            Utils.Input desc = new Utils.Input("Item Description: ", false);
-            Utils.Input price = new Utils.Input("Price: ", false);
+            List<Line> lines = new ArrayList<>();
+            Input name = new Input("Item Name: ", false);
+            Input desc = new Input("Item Description: ", false);
+            Input price = new Input("Price: ", false);
             lines.add(name);
             lines.add(desc);
             lines.add(price);
-            lines.add(new Utils.Button("Add Item", () -> {
+            lines.add(new Button("Add Item", () -> {
                 try {
                     double priceD = Double.parseDouble(price.getInput());
                     Item item = new Item(name.getInput(), desc.getInput(), priceD);
@@ -134,7 +139,7 @@ public class AdminUI {
                     return new AddItemError(admin);
                 }
             }));
-            lines.add(new Utils.Button("Exit", () -> {
+            lines.add(new Button("Exit", () -> {
                 return new ViewOrders(admin);
             }));
             return Utils.loop(title, lines, term);
@@ -153,16 +158,16 @@ public class AdminUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text(item.getName())));
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text(item.getName())));
 
-            List<Utils.Line> lines = new ArrayList<>(List.of(
-                    new Utils.Button("Edit Name", () -> new EditName(admin, item)),
-                    new Utils.Button("Edit Description", () -> new EditDescription(admin, item)),
-                    new Utils.Button("Edit Price", () -> new EditPrice(admin, item)),
-                    new Utils.Button("Delete Item", () -> new RemoveItem(admin, item)),
-                    new Utils.Button("Exit", () -> new ViewMenu(admin))));
+            List<Line> lines = new ArrayList<>(List.of(
+                    new Button("Edit Name", () -> new EditName(admin, item)),
+                    new Button("Edit Description", () -> new EditDescription(admin, item)),
+                    new Button("Edit Price", () -> new EditPrice(admin, item)),
+                    new Button("Delete Item", () -> new RemoveItem(admin, item)),
+                    new Button("Exit", () -> new ViewMenu(admin))));
             return Utils.loop(title, lines, term);
         }
     }
@@ -179,18 +184,18 @@ public class AdminUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("Editing " + item.getName() + "'s Name")));
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Editing " + item.getName() + "'s Name")));
 
-            List<Utils.Line> lines = new ArrayList<>();
-            Utils.Input name = new Utils.Input("New Name: ", false);
+            List<Line> lines = new ArrayList<>();
+            Input name = new Input("New Name: ", false);
             lines.add(name);
-            lines.add(new Utils.Button("Save Name", () -> {
+            lines.add(new Button("Save Name", () -> {
                 item.editName(name.getInput());
                 return new ViewItem(admin, item);
             }));
-            lines.add(new Utils.Button("Exit", () -> {
+            lines.add(new Button("Exit", () -> {
                 return new ViewItem(admin, item);
             }));
 
@@ -210,18 +215,18 @@ public class AdminUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("Editing " + item.getName() + "'s Description")));
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Editing " + item.getName() + "'s Description")));
 
-            List<Utils.Line> lines = new ArrayList<>();
-            Utils.Input description = new Utils.Input("New Description: ", false);
+            List<Line> lines = new ArrayList<>();
+            Input description = new Input("New Description: ", false);
             lines.add(description);
-            lines.add(new Utils.Button("Save Description", () -> {
+            lines.add(new Button("Save Description", () -> {
                 item.editDescription(description.getInput());
                 return new ViewItem(admin, item);
             }));
-            lines.add(new Utils.Button("Exit", () -> {
+            lines.add(new Button("Exit", () -> {
                 return new ViewItem(admin, item);
             }));
 
@@ -241,14 +246,14 @@ public class AdminUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("Editing " + item.getName() + "'s Price")));
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Editing " + item.getName() + "'s Price")));
 
-            List<Utils.Line> lines = new ArrayList<>();
-            Utils.Input price = new Utils.Input("New Price: ", false);
+            List<Line> lines = new ArrayList<>();
+            Input price = new Input("New Price: ", false);
             lines.add(price);
-            lines.add(new Utils.Button("Save Price", () -> {
+            lines.add(new Button("Save Price", () -> {
                 try {
                     double priceD = Double.parseDouble(price.getInput());
                     item.editPrice(priceD);
@@ -257,7 +262,7 @@ public class AdminUI {
                     return new EditPriceError(admin, item);
                 }
             }));
-            lines.add(new Utils.Button("Exit", () -> new ViewItem(admin, item)));
+            lines.add(new Button("Exit", () -> new ViewItem(admin, item)));
 
             return Utils.loop(title, lines, term);
         }
@@ -275,15 +280,15 @@ public class AdminUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("Editing " + item.getName() + "'s Price"),
-                    new Utils.Text("Error: Price must be a double(ex: 5.20)")));
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Editing " + item.getName() + "'s Price"),
+                    new Text("Error: Price must be a double(ex: 5.20)")));
 
-            List<Utils.Line> lines = new ArrayList<>();
-            Utils.Input price = new Utils.Input("New Price: ", false);
+            List<Line> lines = new ArrayList<>();
+            Input price = new Input("New Price: ", false);
             lines.add(price);
-            lines.add(new Utils.Button("Save Price", () -> {
+            lines.add(new Button("Save Price", () -> {
                 try {
                     double priceD = Double.parseDouble(price.getInput());
                     item.editPrice(priceD);
@@ -292,7 +297,7 @@ public class AdminUI {
                     return new EditPriceError(admin, item);
                 }
             }));
-            lines.add(new Utils.Button("Exit", () -> new ViewItem(admin, item)));
+            lines.add(new Button("Exit", () -> new ViewItem(admin, item)));
 
             return Utils.loop(title, lines, term);
         }
@@ -310,16 +315,16 @@ public class AdminUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("Are you sure you wish to remove " + item.getName())));
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Are you sure you wish to remove " + item.getName())));
 
-            List<Utils.Line> lines = new ArrayList<>(List.of(
-                    new Utils.Button("Yes", () -> {
+            List<Line> lines = new ArrayList<>(List.of(
+                    new Button("Yes", () -> {
                         restaurant.getMenu().removeItem(item);
                         return new ViewItem(admin, item);
                     }),
-                    new Utils.Button("No", () -> {
+                    new Button("No", () -> {
                         return new ViewItem(admin, item);
                     })));
             return Utils.loop(title, lines, term);
@@ -336,17 +341,17 @@ public class AdminUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("All active and inactive orders")));
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("All active and inactive orders")));
 
-            List<Utils.Line> lines = new ArrayList<>();
+            List<Line> lines = new ArrayList<>();
             for (Driver driver : restaurant.getDrivers()) {
                 for (Order order : driver.getOrders()) {
-                    lines.add(new Utils.Button(order.getId().toString(), () -> new ViewOrder(admin, order)));
+                    lines.add(new Button(order.getId().toString(), () -> new ViewOrder(admin, order)));
                 }
             }
-            lines.add(new Utils.Button("Exit", () -> new AdminHome(admin)));
+            lines.add(new Button("Exit", () -> new AdminHome(admin)));
 
             return Utils.loop(title, lines, term);
         }
@@ -364,16 +369,16 @@ public class AdminUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("Order: " + order.getId().toString()),
-                    new Utils.Text("Customer: " + order.getCustomer().getName()),
-                    new Utils.Text("ID: " + order.getId().toString()),
-                    new Utils.Text("Status: " + order.getStatus().toString())
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Order: " + order.getId().toString()),
+                    new Text("Customer: " + order.getCustomer().getName()),
+                    new Text("ID: " + order.getId().toString()),
+                    new Text("Status: " + order.getStatus().toString())
 
             ));
-            List<Utils.Line> lines = new ArrayList<>();
-            lines.add(new Utils.Button("Exit", () -> new ViewOrders(admin)));
+            List<Line> lines = new ArrayList<>();
+            lines.add(new Button("Exit", () -> new ViewOrders(admin)));
             return Utils.loop(title, lines, term, 6);
         }
     }

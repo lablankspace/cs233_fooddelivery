@@ -7,8 +7,13 @@ import app.fooddelivery.object.Driver;
 import app.fooddelivery.object.Order;
 import app.fooddelivery.object.Rating;
 import app.fooddelivery.service.Restaurant;
+import app.fooddelivery.ui.Utils.Button;
+import app.fooddelivery.ui.Utils.Line;
 import app.fooddelivery.ui.Utils.Screen;
 import app.fooddelivery.ui.Utils.Term;
+import app.fooddelivery.ui.Utils.Text;
+
+
 
 public class DriverUI {
     public static class DriverHome implements Screen {
@@ -21,14 +26,14 @@ public class DriverUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("WELCOME " + driver.getName())));
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("WELCOME " + driver.getName())));
 
-            List<Utils.Line> lines = new ArrayList<>(List.of(
-                    new Utils.Button("View Orders", () -> new ViewActiveOrders(driver)),
-                    new Utils.Button("View Rates", () -> new ViewRates(driver)),
-                    new Utils.Button("Exit", () -> new LoginUI.Login())));
+            List<Line> lines = new ArrayList<>(List.of(
+                    new Button("View Orders", () -> new ViewActiveOrders(driver)),
+                    new Button("View Rates", () -> new ViewRates(driver)),
+                    new Button("Exit", () -> new LoginUI.Login())));
             return Utils.loop(title, lines, term);
         }
     }
@@ -43,16 +48,16 @@ public class DriverUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> tilte = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text(driver.getName() + "'s Active Orders")));
-            List<Utils.Line> lines = new ArrayList<>();
+            List<Line> tilte = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text(driver.getName() + "'s Active Orders")));
+            List<Line> lines = new ArrayList<>();
 
             for (Order order : driver.getOrders()) {
-                lines.add(new Utils.Button(order.getId().toString() + " " + order.getStatus(),
+                lines.add(new Button(order.getId().toString() + " " + order.getStatus(),
                         () -> new ViewOrder(driver, order)));
             }
-            lines.add(new Utils.Button("Exit", () -> new DriverHome(driver)));
+            lines.add(new Button("Exit", () -> new DriverHome(driver)));
 
             return Utils.loop(tilte, lines, term);
         }
@@ -70,26 +75,26 @@ public class DriverUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("Order: " + order.getId().toString()),
-                    new Utils.Text("Customer: " + order.getCustomer().getName()),
-                    new Utils.Text("Status: " + order.getStatus().toString())));
-            List<Utils.Line> lines = new ArrayList<>();
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Order: " + order.getId().toString()),
+                    new Text("Customer: " + order.getCustomer().getName()),
+                    new Text("Status: " + order.getStatus().toString())));
+            List<Line> lines = new ArrayList<>();
             if (order.getStatus() == Order.Status.ACCEPTED) {
-                lines.add(new Utils.Button("Update to In-Progress", () -> {
+                lines.add(new Button("Update to In-Progress", () -> {
                     order.updateStatus(Order.Status.INPROGRESS);
                     return new ViewActiveOrders(driver);
                 }));
             }
             if (order.getStatus() == Order.Status.INPROGRESS) {
-                lines.add(new Utils.Button("Update to Delivered", () -> {
+                lines.add(new Button("Update to Delivered", () -> {
                     order.updateStatus(Order.Status.DELIVERED);
                     restaurant.update();
                     return new ViewActiveOrders(driver);
                 }));
             }
-            lines.add(new Utils.Button("Exit", () -> {
+            lines.add(new Button("Exit", () -> {
                 return new ViewActiveOrders(driver);
             }));
             return Utils.loop(title, lines, term, 6);
@@ -106,15 +111,15 @@ public class DriverUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> tilte = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text(driver.getName() + "'s Rates")));
-            List<Utils.Line> lines = new ArrayList<>();
+            List<Line> tilte = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text(driver.getName() + "'s Rates")));
+            List<Line> lines = new ArrayList<>();
 
             for (Rating rate : driver.getRates()) {
-                lines.add(new Utils.Text(rate.toString()));
+                lines.add(new Text(rate.toString()));
             }
-            lines.add(new Utils.Button("Exit", () -> new DriverHome(driver)));
+            lines.add(new Button("Exit", () -> new DriverHome(driver)));
 
             return Utils.loop(tilte, lines, term);
         }

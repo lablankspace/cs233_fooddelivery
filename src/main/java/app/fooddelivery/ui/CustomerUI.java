@@ -12,8 +12,13 @@ import app.fooddelivery.object.Order;
 import app.fooddelivery.object.QuantizedItem;
 import app.fooddelivery.object.Rating;
 import app.fooddelivery.service.Restaurant;
+import app.fooddelivery.ui.Utils.Amount;
+import app.fooddelivery.ui.Utils.Button;
+import app.fooddelivery.ui.Utils.Line;
 import app.fooddelivery.ui.Utils.Screen;
 import app.fooddelivery.ui.Utils.Term;
+import app.fooddelivery.ui.Utils.Text;
+
 
 public class CustomerUI {
     public static class CustomerHome implements Screen {
@@ -26,14 +31,14 @@ public class CustomerUI {
         @Override
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("WELCOME " + customer.getName())));
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("WELCOME " + customer.getName())));
 
-            List<Utils.Line> lines = new ArrayList<>();
-            lines.add(new Utils.Button("Place Order", () -> new PlaceOrder(customer)));
-            lines.add(new Utils.Button("View Order History", () -> new ViewOrderHistory(customer)));
-            lines.add(new Utils.Button("Exit", () -> new LoginUI.Login()));
+            List<Line> lines = new ArrayList<>();
+            lines.add(new Button("Place Order", () -> new PlaceOrder(customer)));
+            lines.add(new Button("View Order History", () -> new ViewOrderHistory(customer)));
+            lines.add(new Button("Exit", () -> new LoginUI.Login()));
             return Utils.loop(title, lines, term);
         }
     }
@@ -48,23 +53,23 @@ public class CustomerUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("Placing New Order for " + customer.getName())));
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Placing New Order for " + customer.getName())));
 
             Menu menu = restaurant.getMenu();
 
-            List<Utils.Line> lines = new ArrayList<>();
+            List<Line> lines = new ArrayList<>();
             HashMap<Item, Integer> amount = new HashMap<>();
 
             for (Item item : menu.getItems()) {
-                Utils.Amount line = new Utils.Amount(
+                Amount line = new Amount(
                         item.getName() + " --- " + item.getDescription() + " --- $" + item.getPrice());
                 lines.add(line);
                 amount.put(item, line.quantity());
             }
 
-            lines.add(new Utils.Button("Place Order", () -> {
+            lines.add(new Button("Place Order", () -> {
                 Order o = new Order(customer);
 
                 for (Map.Entry<Item, Integer> entry : amount.entrySet()) {
@@ -79,7 +84,7 @@ public class CustomerUI {
                 restaurant.writeOrder(o);
                 return new CustomerHome(customer);
             }));
-            lines.add(new Utils.Button("Exit", () -> {
+            lines.add(new Button("Exit", () -> {
                 return new CustomerHome(customer);
             }));
             return Utils.loop(title, lines, term);
@@ -96,15 +101,15 @@ public class CustomerUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text(customer.getName() + "'s Order History")));
-            List<Utils.Line> lines = new ArrayList<>();
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text(customer.getName() + "'s Order History")));
+            List<Line> lines = new ArrayList<>();
 
             for (Order order : customer.getOrderHistory()) {
-                lines.add(new Utils.Button(order.getId().toString(), () -> new ViewOrder(customer, order)));
+                lines.add(new Button(order.getId().toString(), () -> new ViewOrder(customer, order)));
             }
-            lines.add(new Utils.Button("Exit", () -> new CustomerHome(customer)));
+            lines.add(new Button("Exit", () -> new CustomerHome(customer)));
 
             return Utils.loop(title, lines, term);
         }
@@ -122,19 +127,19 @@ public class CustomerUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("Order: " + order.getId().toString()),
-                    new Utils.Text("Customer: " + customer.getName()),
-                    new Utils.Text("ID: " + order.getId().toString()),
-                    new Utils.Text("Status: " + order.getStatus().toString())
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Order: " + order.getId().toString()),
+                    new Text("Customer: " + customer.getName()),
+                    new Text("ID: " + order.getId().toString()),
+                    new Text("Status: " + order.getStatus().toString())
 
             ));
-            List<Utils.Line> lines = new ArrayList<>();
+            List<Line> lines = new ArrayList<>();
             if (order.getStatus() == Order.Status.DELIVERED) {
-                lines.add(new Utils.Button("Rate Driver", () -> new RateOrder(customer, order)));
+                lines.add(new Button("Rate Driver", () -> new RateOrder(customer, order)));
             }
-            lines.add(new Utils.Button("Exit", () -> new ViewOrderHistory(customer)));
+            lines.add(new Button("Exit", () -> new ViewOrderHistory(customer)));
             return Utils.loop(title, lines, term, 6);
         }
     }
@@ -151,14 +156,14 @@ public class CustomerUI {
         public Screen run(Term term, Restaurant restaurant) {
             term.clear();
 
-            List<Utils.Line> title = new ArrayList<>(List.of(
-                    new Utils.Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Utils.Text("Rate Order " + order.getId().toString()),
-                    new Utils.Text("Rate 1 to 5")
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Rate Order " + order.getId().toString()),
+                    new Text("Rate 1 to 5")
                 ));
-            List<Utils.Line> lines = new ArrayList<>();
-            Utils.Amount rate = new Utils.Amount("", 1, 5);
-            Utils.Button enter = new Utils.Button("Submit Rating", () -> {
+            List<Line> lines = new ArrayList<>();
+            Amount rate = new Amount("", 1, 5);
+            Button enter = new Button("Submit Rating", () -> {
                 Rating rating = new Rating(customer, rate.quantity());
                 restaurant.addRating(order, rating);
                 return new ViewOrder(customer, order);
