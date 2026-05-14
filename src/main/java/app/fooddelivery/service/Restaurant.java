@@ -159,6 +159,11 @@ public class Restaurant {
         for (Driver d : getDrivers()) {
             for (Order o : d.getOrders()) {
                 if (order.equals(o)) {
+                    for (Rating r : d.getRates()) {
+                        if (r.equals(rate)) {
+                            return;
+                        }
+                    }
                     d.addRate(rate);
                 }
             }

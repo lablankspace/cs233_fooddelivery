@@ -12,6 +12,7 @@ import app.fooddelivery.object.Order;
 import app.fooddelivery.object.QuantizedItem;
 import app.fooddelivery.object.Rating;
 import app.fooddelivery.service.Restaurant;
+import app.fooddelivery.ui.CustomerUI.CustomerHome;
 import app.fooddelivery.ui.Utils.Amount;
 import app.fooddelivery.ui.Utils.Button;
 import app.fooddelivery.ui.Utils.Line;
@@ -77,6 +78,60 @@ public class CustomerUI {
                         o.addQuantizedItem(new QuantizedItem(
                                 entry.getKey(), entry.getValue()));
                     }
+                }
+                if (o.getItems().isEmpty()) {
+                    return new PlaceOrderError(customer);
+                }
+                restaurant.addOrder(o);
+                restaurant.update();
+                customer.addOrder(o);
+                restaurant.writeOrder(o);
+                return new CustomerHome(customer);
+            }));
+            lines.add(new Button("Exit", () -> {
+                return new CustomerHome(customer);
+            }));
+            return Utils.loop(title, lines, term);
+        }
+    }
+    public static class PlaceOrderError implements Screen {
+        private final Customer customer;
+
+        public PlaceOrderError(Customer customer) {
+            this.customer = customer;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Placing New Order for " + customer.getName()),
+                    new Text("ERROR: No items selected")));
+
+            Menu menu = restaurant.getMenu();
+
+            List<Line> lines = new ArrayList<>();
+            HashMap<Item, Integer> amount = new HashMap<>();
+
+            for (Item item : menu.getItems()) {
+                Amount line = new Amount(
+                        item.getName() + " --- " + item.getDescription() + " --- $" + item.getPrice());
+                lines.add(line);
+                amount.put(item, line.quantity());
+            }
+
+            lines.add(new Button("Place Order", () -> {
+                Order o = new Order(customer);
+
+                for (Map.Entry<Item, Integer> entry : amount.entrySet()) {
+                    if (entry.getValue() > 0) {
+                        o.addQuantizedItem(new QuantizedItem(
+                                entry.getKey(), entry.getValue()));
+                    }
+                }
+                if (o.getItems().isEmpty()) {
+                    return new PlaceOrderError(customer);
                 }
                 restaurant.addOrder(o);
                 restaurant.update();

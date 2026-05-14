@@ -66,7 +66,9 @@ public class LoginUI {
 
             List<Line> title = new ArrayList<>(List.of(
                     new Text("ISLAND GIRLS DELIVERY SERVICE"),
-                    new Text("PLEASE LOGIN")));
+                    new Text("PLEASE LOGIN"),
+                    new Text("INVALID USERNAME OR PASSWORD")
+                ));
 
             Input username = new Input("Username: ", false);
             Input password = new Input("Password: ", true);

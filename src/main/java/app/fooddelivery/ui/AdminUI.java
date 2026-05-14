@@ -101,7 +101,7 @@ public class AdminUI {
                 }
             }));
             lines.add(new Button("Exit", () -> {
-                return new ViewOrders(admin);
+                return new ViewMenu(admin);
             }));
             return Utils.loop(title, lines, term);
         }
@@ -140,7 +140,7 @@ public class AdminUI {
                 }
             }));
             lines.add(new Button("Exit", () -> {
-                return new ViewOrders(admin);
+                return new ViewMenu(admin);
             }));
             return Utils.loop(title, lines, term);
         }
@@ -322,7 +322,7 @@ public class AdminUI {
             List<Line> lines = new ArrayList<>(List.of(
                     new Button("Yes", () -> {
                         restaurant.getMenu().removeItem(item);
-                        return new ViewItem(admin, item);
+                        return new ViewMenu(admin);
                     }),
                     new Button("No", () -> {
                         return new ViewItem(admin, item);

@@ -202,6 +202,13 @@ public class Utils {
                         text.putString(x, y + i, line);
                 }
         }
+        public static void render(Line line, int selection, TerminalSize screenSize, TextGraphics text, int y) {
+                        String txt = line.render(false);
+                        text.putString(0, y, " ".repeat(screenSize.getColumns()));
+                        int x = screenSize.getColumns() / 2 - txt.length() / 2;
+                        text.putString(x, y, txt);
+        }
+
 
         public static int keyPress(int selection, KeyStroke key, List<Line> lines) {
                 if (key.getKeyType() == KeyType.ArrowDown)
@@ -225,12 +232,16 @@ public class Utils {
 
                 render(title, -1, term.size(), term.text(), 0);
                 render(lines, selection, term.size(), term.text(), 3);
+                Line footer = new Text("↑↓ Navigate   Enter Select   ←→ Change Quantity");
+                render(footer, -1, term.size(), term.text(), term.size().getRows() - 1);
 
                 term.flush();
 
                 while (true) {
                         KeyStroke key = term.readKey();
-
+                        if (key == null) {
+                                continue;
+                        }
                         Line current = lines.get(selection);
                         current.onKey(key);
 
@@ -256,6 +267,8 @@ public class Utils {
 
                 render(title, -1, term.size(), term.text(), 0);
                 render(lines, selection, term.size(), term.text(), y);
+                Line footer = new Text("↑↓ Navigate   Enter Select   ←→ Change Quantity");
+                render(footer, -1, term.size(), term.text(), term.size().getRows() - 1);
 
                 term.flush();
 
