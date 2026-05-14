@@ -35,7 +35,7 @@ public class LoginUI {
             List<Line> lines = new ArrayList<>();
             lines.add(username);
             lines.add(password);
-            lines.add(new Button("Yes", () -> {
+            lines.add(new Button("Login", () -> {
                 String user = username.getInput();
                 String pass = password.getInput();
 
@@ -76,7 +76,7 @@ public class LoginUI {
             List<Line> lines = new ArrayList<>();
             lines.add(username);
             lines.add(password);
-            lines.add(new Button("Yes", () -> {
+            lines.add(new Button("Login", () -> {
                 String user = username.getInput();
                 String pass = password.getInput();
 
