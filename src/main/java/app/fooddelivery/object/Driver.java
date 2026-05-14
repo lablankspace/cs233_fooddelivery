@@ -51,7 +51,7 @@ public class Driver extends User {
         for (Rating rate : ratings) {
             avg += rate.getScore();
         }
-        if (ratings.size() == 0) {
+        if (ratings.isEmpty()) {
             return 0;
         }
         return avg / ratings.size();
@@ -59,7 +59,6 @@ public class Driver extends User {
     public void addRate(Rating rate) {
         if (ratings.size() > 5) {
             ratings.poll();
-            ratings.add(rate);
         }
         ratings.add(rate);
     }

@@ -144,10 +144,10 @@ public class Restaurant {
                 .registerTypeAdapter(QuantizedItem.class, new Deserialization.QuantizedItemDeserializer())
                 .create();
         try {
-            FileWriter writer = new FileWriter(file);
-            gson.toJson(o, writer);
+            FileWriter writer = new FileWriter(file, true);
+            gson.toJson(o + "\n", writer);
         } catch (IOException e) {
-            System.err.println("Failed to save!"); // is this the best way to do this? maybe make a new screen instead
+            System.err.println("Failed to save!");
         }
     }
 
@@ -175,6 +175,10 @@ public class Restaurant {
         if (order == null)
             return;
         Driver driver = findDriver();
+        if (driver == null) {
+            state.orderQueue.add(order);
+            return;
+        }
         order.updateStatus(Order.Status.ACCEPTED);
         driver.addOrder(order);
     }
