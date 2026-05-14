@@ -61,22 +61,22 @@ public class CustomerUI {
             Menu menu = restaurant.getMenu();
 
             List<Line> lines = new ArrayList<>();
-            HashMap<Item, Integer> amount = new HashMap<>();
+            HashMap<Item, Amount> amount = new HashMap<>();
 
             for (Item item : menu.getItems()) {
                 Amount line = new Amount(
                         item.getName() + " --- " + item.getDescription() + " --- $" + item.getPrice());
                 lines.add(line);
-                amount.put(item, line.quantity());
+                amount.put(item, line);
             }
 
             lines.add(new Button("Place Order", () -> {
                 Order o = new Order(customer);
 
-                for (Map.Entry<Item, Integer> entry : amount.entrySet()) {
-                    if (entry.getValue() > 0) {
+                for (Map.Entry<Item, Amount> entry : amount.entrySet()) {
+                    if (entry.getValue().quantity() > 0) {
                         o.addQuantizedItem(new QuantizedItem(
-                                entry.getKey(), entry.getValue()));
+                                entry.getKey(), entry.getValue().quantity()));
                     }
                 }
                 if (o.getItems().isEmpty()) {

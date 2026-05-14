@@ -257,6 +257,8 @@ public class Utils {
 
                         render(title, -1, term.size(), term.text(), 0);
                         render(lines, selection, term.size(), term.text(), 3);
+                        render(footer, -1, term.size(), term.text(), term.size().getRows() - 1);
+
 
                         term.flush();
                 }
@@ -274,6 +276,10 @@ public class Utils {
 
                 while (true) {
                         KeyStroke key = term.readKey();
+                        
+                        if (key == null) {
+                                continue;
+                        }
 
                         Line current = lines.get(selection);
                         current.onKey(key);
@@ -290,6 +296,7 @@ public class Utils {
 
                         render(title, -1, term.size(), term.text(), 0);
                         render(lines, selection, term.size(), term.text(), y);
+                        render(footer, -1, term.size(), term.text(), term.size().getRows() - 1);
 
                         term.flush();
                 }
