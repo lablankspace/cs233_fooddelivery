@@ -57,7 +57,7 @@ public class Driver extends User {
         return avg / ratings.size();
     }
     public void addRate(Rating rate) {
-        if (ratings.size() > 5) {
+        if (ratings.size() > 10) {
             ratings.poll();
         }
         ratings.add(rate);
