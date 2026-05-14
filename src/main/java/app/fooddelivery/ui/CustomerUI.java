@@ -12,7 +12,6 @@ import app.fooddelivery.object.Order;
 import app.fooddelivery.object.QuantizedItem;
 import app.fooddelivery.object.Rating;
 import app.fooddelivery.service.Restaurant;
-import app.fooddelivery.ui.CustomerUI.CustomerHome;
 import app.fooddelivery.ui.Utils.Amount;
 import app.fooddelivery.ui.Utils.Button;
 import app.fooddelivery.ui.Utils.Line;

@@ -1,0 +1,2234 @@
+package app.fooddelivery;
+
+import java.io.File;
+import java.io.IOException;
+
+import app.fooddelivery.object.Admin;
+import app.fooddelivery.object.Customer;
+import app.fooddelivery.object.Driver;
+import app.fooddelivery.object.Item;
+import app.fooddelivery.object.State;
+import app.fooddelivery.service.Restaurant;
+import app.fooddelivery.service.StateLoader;
+import app.fooddelivery.ui.LoginUI.Login;
+import app.fooddelivery.ui.Utils.Screen;
+import app.fooddelivery.ui.Utils.Term;
+
+public class Main {
+    public static void main(String[] args) {
+        File stateFileTarget = new File("state.json");
+        State state = StateLoader.loadFrom(stateFileTarget).orElseGet(State::new);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Saving data...");
+            try {
+                StateLoader.saveTo(stateFileTarget, state);
+            } catch (IOException e) {
+                System.err.println("Failed to save!");
+            }
+        }));
+        Restaurant restaurant = new Restaurant(state);
+
+        if (restaurant.getUsers().isEmpty()){
+            Customer c = new Customer("cust", "cust");
+            Driver d = new Driver("driv", "driv");
+            Admin a = new Admin("admin", "admin");
+            restaurant.addUser(c);
+            restaurant.addUser(d);
+            restaurant.addUser(a);
+
+            Item burger = new Item("Burger", "A thing that Burgs", 12.50);
+            Item fries = new Item("Fries", "A thing that lies about being french", 5.00);
+            restaurant.getMenu().addItem(fries);
+            restaurant.getMenu().addItem(burger);
+        }
+        Term term = new Term();
+        Screen current = new Login();
+        while (current != null) {
+            current = current.run(term, restaurant);
+        }
+        try {
+            StateLoader.saveTo(stateFileTarget, state);
+        } catch (IOException e) {
+            System.err.println("Failed to save!");
+        }
+    }
+}package app.fooddelivery.object;
+
+import java.util.UUID;
+
+public class Admin extends User{
+    protected Admin(String name, UUID id, String password) { super(name, id, password); }
+    protected Admin(String name, UUID id, byte[] passwordHash) { super(name, id, passwordHash); }
+    protected Admin(User u) { super(u.getName(), u.getId(), u.getPasswordHash()); }
+    public Admin(String name, String password) {
+        this(name, UUID.randomUUID(), password);
+    }
+    @Override
+    public String getRole() {
+        return "Admin";
+    }
+}package app.fooddelivery.object;
+
+import java.util.ArrayList;
+import java.util.UUID;
+
+public class Customer extends User {
+    private final ArrayList<Order> orderHistory;
+    protected Customer(String name, UUID id, String password) {
+        super(name, id, password);
+        this.orderHistory = new ArrayList<>();
+    }
+
+    protected Customer(String name, UUID id, byte[] passwordHash) {
+        super(name, id, passwordHash);
+        this.orderHistory = new ArrayList<>();
+    }
+
+    public Customer(String name, String password) {
+        this(name, UUID.randomUUID(), password);
+    }
+    protected Customer(User u) {
+        super(u.getName(), u.getId(), u.getPasswordHash());
+        orderHistory = new ArrayList<>();
+    }
+
+    @Override
+    public String getRole() {
+        return "Customer";
+    }
+
+    public Order createOrder(){
+        return new Order(this);
+    }
+    public void rateDriver(Driver driver, int rating) {
+        if (rating < 1 || rating > 5) {
+            throw new IllegalArgumentException("Rating must be between 1 and 5");
+        }
+        Rating rate = new Rating(this,rating);
+        driver.addRate(rate);
+    }
+    public ArrayList<Order> getOrderHistory() {
+        return orderHistory;
+    }
+    public void addOrder(Order order) {
+        orderHistory.add(order);
+    }
+}package app.fooddelivery.object;
+
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.UUID;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+
+public class Deserialization {
+    public static class StateDeserializer implements JsonDeserializer<State> {
+
+        @Override
+        public State deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            State state = new State();
+            JsonObject object = json.getAsJsonObject();
+            JsonObject usersObj = object.getAsJsonObject("users");
+            for (Map.Entry<String, JsonElement> entry : usersObj.entrySet()) {
+                JsonElement userElement = entry.getValue();
+                String role = userElement.getAsJsonObject().get("role").getAsString();
+                Class<? extends User> type;
+                switch (role) {
+                    case "Admin":
+                        type = Admin.class;
+                        break;
+                    case "Driver":
+                        type = Driver.class;
+                        break;
+                    default:
+                        type = Customer.class;
+                        break;
+                }
+
+                User user = context.deserialize(userElement, type);
+
+                state.users.put(user.getId(), user);
+            }
+
+            JsonElement menuElement = object.get("menu");
+            Menu menu = context.deserialize(menuElement, Menu.class);
+            state.menu = menu;
+
+            JsonArray queue = object.getAsJsonArray("orderQueue");
+
+            for (JsonElement element : queue) {
+                Order order = context.deserialize(element, Order.class);
+            if (order != null) state.orderQueue.add(order);
+            }
+            return state;
+        }
+    }
+    public static class OrderDeserializer implements JsonDeserializer<Order> {
+
+        @Override
+        public Order deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject object = json.getAsJsonObject();
+            UUID id = UUID.fromString(object.get("id").getAsString());
+            UUID customerId = UUID.fromString(object.get("customerId").getAsString());
+            Order o = new Order(id, customerId);
+            JsonArray items = object.getAsJsonArray("items");
+            for (JsonElement element : items) {
+                QuantizedItem item = context.deserialize(element, QuantizedItem.class);
+                o.addQuantizedItem(item);
+            }
+            return o;
+        }
+    }
+    public static class QuantizedItemDeserializer implements JsonDeserializer<QuantizedItem> {
+
+        @Override
+        public QuantizedItem deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject object = json.getAsJsonObject();
+            return new QuantizedItem(UUID.fromString(object.get("itemId").getAsString()),object.get("quantity").getAsInt());
+        }
+    }
+    public static class ItemDeserializer implements JsonDeserializer<Item> {
+        @Override
+        public Item deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject object = json.getAsJsonObject();
+            String name = object.get("name").getAsString();
+            String description = object.get("description").getAsString();
+            Double price = object.get("price").getAsDouble();
+            UUID id = UUID.fromString(object.get("id").getAsString());
+            return new Item(name, description, price, id);
+        }
+    }
+    public static class AdminDeserializer implements JsonDeserializer<Admin> {
+
+        @Override
+        public Admin deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject object = json.getAsJsonObject();
+            return new Admin(object.get("name").getAsString(),UUID.fromString(object.get("id").getAsString()),hexToBytes(object.get("phash").getAsString()));
+        }
+    }
+    public static class CustomerDeserializer implements JsonDeserializer<Customer> {
+
+        @Override
+        public Customer deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject object = json.getAsJsonObject();
+            return new Customer(object.get("name").getAsString(),UUID.fromString(object.get("id").getAsString()),hexToBytes(object.get("phash").getAsString()));
+        }
+    }
+    public static class DriverDeserializer implements JsonDeserializer<Driver> {
+
+        @Override
+        public Driver deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject object = json.getAsJsonObject();
+            Driver driver = new Driver(object.get("name").getAsString(),UUID.fromString(object.get("id").getAsString()),hexToBytes(object.get("phash").getAsString()));
+            Rating[] ratings = context.deserialize(object.get("Rating"), Rating[].class);
+            for (Rating r : ratings) {
+                driver.addRate(r);
+            }
+            return driver;
+        }
+    }
+    public static class UserRatingDeserializer implements JsonDeserializer<Rating> {
+
+        @Override
+        public Rating deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject object = json.getAsJsonObject();
+            return new Rating(UUID.fromString(object.get("creatorId").getAsString()),object.get("score").getAsInt(),object.get("timestamp").getAsString());
+        }
+    }
+    private static byte[] hexToBytes(String hex) {
+        int len = hex.length();
+        if (len % 2 != 0) {
+            throw new IllegalArgumentException("Hex string must have even length");
+        }
+
+        byte[] result = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            int high = Character.digit(hex.charAt(i), 16);
+            int low  = Character.digit(hex.charAt(i + 1), 16);
+
+            if (high == -1 || low == -1) {
+                throw new IllegalArgumentException("Invalid hex character");
+            }
+
+            result[i / 2] = (byte) ((high << 4) + low);
+        }
+        return result;
+    }
+}
+package app.fooddelivery.object;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.UUID;
+
+public class Driver extends User {
+    private Status status;
+    private final ArrayList<Order> orders;
+    private final Queue<Rating> ratings;
+    
+    protected Driver(String name, UUID id, String password){
+        super(name, id, password);
+        this.status = Status.FREE;
+        orders = new ArrayList<>();
+        ratings = new LinkedList<>();
+    }
+    protected Driver(User u) { 
+        super(u.getName(), u.getId(), u.getPasswordHash()); 
+        orders = new ArrayList<>();
+        ratings = new LinkedList<>();
+        }
+
+    protected Driver(String name, UUID id, byte[] phashes) {
+        super(name,id,phashes);
+        this.status = Status.FREE;
+        orders = new ArrayList<>();
+        ratings = new LinkedList<>();
+    }
+    public Driver(String name, String password) {
+        this(name, UUID.randomUUID(), password);
+    }
+    public void addOrder(Order order) {
+        orders.add(order);
+    }
+    public ArrayList<Order> getOrders() {
+        return orders;
+    }
+    public Status getStatus() {
+        return status;
+    }
+    public void goOffline() {
+        status = Status.OFFLINE;
+    }
+    public void goOnline() {
+        status = Status.FREE;
+    }
+    public double averageRate() {
+        double avg = 0;
+        for (Rating rate : ratings) {
+            avg += rate.getScore();
+        }
+        return avg / ratings.size();
+    }
+    public void addRate(Rating rate) {
+        if (ratings.size() > 5) {
+            ratings.poll();
+            ratings.add(rate);
+        }
+        ratings.add(rate);
+    }
+    public Queue<Rating> getRates() {
+        return ratings;
+    }
+    @Override
+    public String getRole() {
+        return "Driver";
+    }
+    public static enum Status {
+        FREE,
+        BUSY,
+        OFFLINE
+    }
+}package app.fooddelivery.object;
+
+import java.util.Objects;
+import java.util.UUID;
+
+public class Item {
+    private String name;
+    private String description;
+    private double price;
+    private UUID id;
+    protected Item(String name, String description, double price, UUID id) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.id = id;
+    }
+    public Item(String name, String description, double price) {
+        this(name,description,price,UUID.randomUUID());
+    }
+    public String getName() {
+        return name;
+    }
+    public String getDescription() {
+        return description;
+    }
+    public double getPrice() {
+        return price;
+    }
+    public UUID getId() {
+        return id;
+    }
+    public void editName(String name) {
+        this.name = name;
+    }
+    public void editDescription(String description) {
+        this.description = description;
+    }
+    public void editPrice(double price) {
+        this.price = price;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Item item = (Item) o;
+        return Objects.equals(id, item.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+}package app.fooddelivery.object;
+
+import java.util.HashSet;
+
+public class Menu {
+    private final HashSet<Item> items;
+    Menu() {
+        items = new HashSet<>();
+    }
+    public void addItem(Item item) {
+        items.add(item);
+    }
+    public void removeItem(Item item) {
+        items.remove(item);
+    }
+    public HashSet<Item> getItems() {
+        return items;
+    }
+}package app.fooddelivery.object;
+
+import java.util.ArrayList;
+import java.util.UUID;
+
+public class Order {
+
+    private Customer customer;
+    private UUID customerId;
+    private final ArrayList<QuantizedItem> items;
+    private Status status;
+    private final UUID id;
+
+    public Order(Customer customer) {
+        this.customer = customer;
+        this.customerId = customer.getId();
+        items = new ArrayList<>();
+        this.id = UUID.randomUUID();
+        this.status = Status.PLACED;
+    }
+
+    protected Order(UUID id, UUID customerId) {
+        this.customerId = customerId;
+        items = new ArrayList<>();
+        this.id = id;
+        this.status = Status.PLACED;
+    }
+
+    public void addItem(Item item, int quantity) {
+        items.add(new QuantizedItem(item, quantity));
+    }
+
+    public void addQuantizedItem(QuantizedItem item) {
+        items.add(item);
+    }
+
+    public void removeItem(Item item) {
+        for (QuantizedItem quantizedItem : items) {
+            if (quantizedItem.getItemId().equals(item.getId())) {
+                items.remove(quantizedItem);
+                return;
+            }
+        }
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public ArrayList<QuantizedItem> getItems() {
+        return items;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void updateStatus(Status status) {
+        this.status = status;
+    }
+
+    public UUID getId() {
+        return this.id;
+    }
+
+    public static enum Status {
+        PLACED,
+        ACCEPTED,
+        INPROGRESS,
+        DELIVERED
+    }
+
+    protected void setCustomer(Customer customer) {
+        this.customer = customer;
+        this.customerId = customer.getId();
+    }
+
+    protected UUID getCustomerId() {
+        return customerId;
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Order)) {
+            return false;
+        }
+        Order other = (Order) o;
+        return this.id.equals(other.id);
+    }
+}package app.fooddelivery.object;
+
+import java.util.UUID;
+
+public class QuantizedItem {
+    private Item item;
+    private final UUID itemId;
+    private final int quantity;
+
+    public QuantizedItem(Item item, int quantity) {
+        this.item = item;
+        this.itemId = item.getId();
+        this.quantity = quantity;
+    }
+
+    QuantizedItem(UUID itemId, int quantity) {
+        this.itemId = itemId;
+        this.quantity = quantity;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public UUID getItemId() {
+        return itemId;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public double getPrice() {
+        return item.getPrice() * quantity;
+    }
+
+    protected void setItemRef(Item item) {
+        if (item.getId().equals(itemId)) {
+            this.item = item;
+        }
+    }
+}
+package app.fooddelivery.object;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
+
+public class Rating {
+    private int score;
+    private String timestamp;
+    private UUID creatorId;
+
+    protected Rating(UUID creatorId, int score, String timestamp) {
+        this.score = score;
+        this.creatorId = creatorId;
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        this.timestamp = now.format(formatter);
+    }
+
+    protected Rating(UUID creatorId, int score) {
+        this(creatorId, score, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+    }
+
+    public Rating(Customer from, int score) {
+        this(from.getId(), score);
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public String getTimeStamp() {
+        return timestamp;
+    }
+
+    @Override
+    public String toString() {
+        return ("Score: " + score + " --- " + "Time: " + timestamp);
+    }
+
+    public UUID getCreatorId() {
+        return this.creatorId;
+    }
+}package app.fooddelivery.object;
+
+import java.lang.reflect.Type;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+
+public class Serialization {
+    public static class StateSerializer implements JsonSerializer<State> {
+
+        @Override
+        public JsonElement serialize(State state, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject obj = new JsonObject();
+
+            obj.add("users", context.serialize(state.users));
+            obj.add("menu", context.serialize(state.menu));
+            obj.add("orderQueue", context.serialize(state.orderQueue));
+
+            return obj;
+        }
+    }
+
+    public static class OrderSerializer implements JsonSerializer<Order> {
+
+        @Override
+        public JsonElement serialize(Order order, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject obj = new JsonObject();
+
+            obj.addProperty("id", order.getId().toString());
+            obj.add("customerId", context.serialize(order.getCustomer().getId()));
+            obj.add("items", context.serialize(order.getItems()));
+
+            return obj;
+        }
+    }
+
+    public static class QuantizedItemSerializer implements JsonSerializer<QuantizedItem> {
+
+        @Override
+        public JsonElement serialize(QuantizedItem quantizedItem, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject obj = new JsonObject();
+
+            obj.addProperty("itemId", quantizedItem.getItemId().toString());
+            obj.addProperty("quantity", quantizedItem.getQuantity());
+
+            return obj;
+        }
+    }
+
+    public static class ItemSerializer implements JsonSerializer<Item> {
+        @Override
+        public JsonElement serialize(Item item, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject obj = new JsonObject();
+
+            obj.addProperty("name", item.getName());
+            obj.addProperty("description", item.getDescription());
+            obj.addProperty("price", item.getPrice());
+            obj.addProperty("id", item.getId().toString());
+
+
+            return obj;
+        }
+
+    }
+
+    public static class AdminSerializer implements JsonSerializer<Admin> {
+
+        @Override
+        public JsonElement serialize(Admin admin, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject obj = new JsonObject();
+
+            obj.addProperty("name", admin.getName());
+            obj.addProperty("id", admin.getId().toString());
+            obj.addProperty("role", admin.getRole());
+            obj.addProperty("phash", admin.getPasswordHashHex());
+
+            return obj;
+        }
+    }
+
+    public static class CustomerSerializer implements JsonSerializer<Customer> {
+
+        @Override
+        public JsonElement serialize(Customer customer, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject obj = new JsonObject();
+
+            obj.addProperty("name", customer.getName());
+            obj.addProperty("id", customer.getId().toString());
+            obj.addProperty("role", customer.getRole());
+            obj.addProperty("phash", customer.getPasswordHashHex());
+
+            return obj;
+        }
+    }
+
+    public static class DriverSerializer implements JsonSerializer<Driver> {
+
+        @Override
+        public JsonElement serialize(Driver driver, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject obj = new JsonObject();
+
+            obj.addProperty("name", driver.getName());
+            obj.addProperty("id", driver.getId().toString());
+            obj.addProperty("role", driver.getRole());
+            obj.addProperty("phash", driver.getPasswordHashHex());
+            obj.add("ratings", context.serialize(driver.getRates()));
+
+            return obj;
+        }
+    }
+
+    public static class UserRatingSerializer implements JsonSerializer<Rating> {
+
+        @Override
+        public JsonElement serialize(Rating userRating, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject obj = new JsonObject();
+
+            obj.addProperty("score", userRating.getScore());
+            obj.addProperty("timestamp", userRating.getTimeStamp());
+            obj.addProperty("creatorId", userRating.getCreatorId().toString());
+
+            return obj;
+        }
+    }
+}
+package app.fooddelivery.object;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.UUID;
+
+public class State {
+    public final HashMap<UUID, User> users;
+    public final Queue<Order> orderQueue;
+    public Menu menu;
+
+    public State() {
+        users = new HashMap<>();
+        orderQueue = new LinkedList<>();
+        menu = new Menu();
+    }
+}
+package app.fooddelivery.object;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.UUID;
+
+public abstract class User {
+    private String name;
+    private final UUID id;
+    private final byte[] passwordHash;
+
+    public User(String name, String password) {
+        this(name, UUID.randomUUID(), password);
+    }
+
+    protected User(String name, UUID id, String password) {
+        this.name = name;
+        this.id = id;
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            passwordHash = digest.digest(password.getBytes());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);  // Lets try and remove this if possible
+        }
+    }
+
+    protected User(String name, UUID id, byte[] passwordHash) {
+        this.name = name;
+        this.id = id;
+        this.passwordHash = passwordHash;
+    }
+
+    protected byte[] getPasswordHash() {
+        return Arrays.copyOf(passwordHash, passwordHash.length);
+    }
+
+    protected String getPasswordHashHex() {
+        StringBuilder hexBuilder = new StringBuilder(passwordHash.length * 2);
+        for (byte b : passwordHash)
+            hexBuilder.append(String.format("%02x", b));
+        return hexBuilder.toString();
+    }
+
+    public boolean checkPassword(String inputPassword) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            return Arrays.equals(digest.digest(inputPassword.getBytes()), passwordHash);
+        } catch (NoSuchAlgorithmException e) {
+            return false;
+        }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public abstract String getRole();
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!(obj instanceof User))
+            return false;
+        User other = (User) obj;
+        return id.equals(other.id);
+    }
+}package app.fooddelivery.service;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import app.fooddelivery.object.Admin;
+import app.fooddelivery.object.Customer;
+import app.fooddelivery.object.Deserialization;
+import app.fooddelivery.object.Driver;
+import app.fooddelivery.object.Menu;
+import app.fooddelivery.object.Order;
+import app.fooddelivery.object.QuantizedItem;
+import app.fooddelivery.object.Rating;
+import app.fooddelivery.object.Serialization;
+import app.fooddelivery.object.State;
+import app.fooddelivery.object.User;
+
+public class Restaurant {
+    private final State state;
+
+    public Restaurant(State state) {
+        this.state = state;
+    }
+
+    public void addUser(User u) {
+        if (!state.users.containsKey(u.getId()) && !isNameTaken(u.getName(), state.users.values())
+                && !isIdTaken(u.getId(), state.users.values())) {
+            state.users.put(u.getId(), u);
+        }
+    }
+
+    public boolean containsUser(User u) {
+        return state.users.containsValue(u);
+    }
+
+    public boolean containsUser(String name) {
+        for (User u : state.users.values()) {
+            if (u.getName().equals(name))
+                return true;
+        }
+        return false;
+    }
+
+    public void removeUser(User u) {
+        state.users.remove(u.getId());
+    }
+
+    public User getUser(String name) {
+        for (User u : state.users.values()) {
+            if (u.getName().equals(name))
+                return u;
+        }
+        return null;
+    }
+
+    public Collection<User> getUsers() {
+        return Collections.unmodifiableCollection(state.users.values());
+    }
+
+    public Admin getAdmin(String name) {
+        for (User u : state.users.values()) {
+            if (u instanceof Admin && u.getName().equals(name))
+                return (Admin) u;
+        }
+        return null;
+    }
+
+    public List<Driver> getDrivers() {
+        List<Driver> drivers = new ArrayList<>();
+        for (User u : state.users.values()) {
+            if (u instanceof Driver)
+                drivers.add((Driver) u);
+        }
+        return drivers;
+    }
+
+    public Driver getDriver(String name) {
+        for (User u : state.users.values()) {
+            if (u instanceof Driver && u.getName().equals(name))
+                return (Driver) u;
+        }
+        return null;
+    }
+
+    public Customer getCustomer(String name) {
+        for (User u : state.users.values()) {
+            if (u instanceof Customer && u.getName().equals(name))
+                return (Customer) u;
+        }
+        return null;
+    }
+
+    public static boolean isNameTaken(String name, Collection<? extends User> users) {
+        for (User u : users) {
+            if (u.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isIdTaken(UUID id, Collection<? extends User> users) {
+        for (User u : users) {
+            if (u.getId().equals(id)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Menu getMenu() {
+        return state.menu;
+    }
+
+    public void addOrder(Order o) {
+        state.orderQueue.add(o);
+        update();
+    }
+
+    public Order nextOrder() {
+        return state.orderQueue.poll();
+    }
+
+    public void update() {
+        assignDriver();
+    }
+    
+    public void writeOrder(Order o) {
+        File file = new File("order.txt");
+        Gson gson = new GsonBuilder()
+                .setPrettyPrinting()
+                .registerTypeAdapter(Order.class, new Serialization.OrderSerializer())
+                .registerTypeAdapter(Order.class, new Deserialization.OrderDeserializer())
+                .registerTypeAdapter(QuantizedItem.class, new Serialization.QuantizedItemSerializer())
+                .registerTypeAdapter(QuantizedItem.class, new Deserialization.QuantizedItemDeserializer())
+                .create();
+        try {
+            FileWriter writer = new FileWriter(file);
+            gson.toJson(o, writer);
+        } catch (IOException e) {
+            System.err.println("Failed to save!"); // is this the best way to do this? maybe make a new screen instead
+        }
+    }
+
+    public Collection<Order> getOrderQueue() {
+        return Collections.unmodifiableCollection(state.orderQueue);
+    }
+
+    public void addRating(Order order, Rating rate) {
+        for (Driver d : getDrivers()) {
+            for (Order o : d.getOrders()) {
+                if (order.equals(o)) {
+                    for (Rating r : d.getRates()) {
+                        if (r.equals(rate)) {
+                            return;
+                        }
+                    }
+                    d.addRate(rate);
+                }
+            }
+        }
+    }
+
+    public void assignDriver() {
+        Order order = nextOrder();
+        if (order == null)
+            return;
+        Driver driver = findDriver();
+        order.updateStatus(Order.Status.ACCEPTED);
+        driver.addOrder(order);
+    }
+
+    public Driver findDriver() {
+        Driver best = null;
+        for (Driver driver : getDrivers()) {
+            if (driver.getStatus() == Driver.Status.FREE) {
+                if (best == null || driver.averageRate() > best.averageRate()) {
+                    best = driver;
+                }
+            }
+        }
+        return best;
+    }
+
+    public int checkLogin(String user, String pass) {
+        if (containsUser(user)) {
+            User u = getUser(user);
+            if (u.checkPassword(pass)) {
+                if (u.getRole().equals("Admin"))
+                    return 0;
+                if (u.getRole().equals("Driver"))
+                    return 1;
+                else
+                    return 2;
+            } else
+                return 3;
+        } else
+            return 3;
+    }
+}package app.fooddelivery.service;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Optional;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import app.fooddelivery.object.Admin;
+import app.fooddelivery.object.Customer;
+import app.fooddelivery.object.Deserialization;
+import app.fooddelivery.object.Driver;
+import app.fooddelivery.object.Item;
+import app.fooddelivery.object.Order;
+import app.fooddelivery.object.QuantizedItem;
+import app.fooddelivery.object.Rating;
+import app.fooddelivery.object.Serialization;
+import app.fooddelivery.object.State;
+
+public class StateLoader {
+    private static Gson gson;
+
+    private static void initGsonIfNull() {
+        if (gson != null)
+            return;
+        gson = new GsonBuilder()
+                .setPrettyPrinting()
+                .registerTypeAdapter(State.class, new Serialization.StateSerializer())
+                .registerTypeAdapter(State.class, new Deserialization.StateDeserializer())
+                .registerTypeAdapter(Order.class, new Serialization.OrderSerializer())
+                .registerTypeAdapter(Order.class, new Deserialization.OrderDeserializer())
+                .registerTypeAdapter(QuantizedItem.class, new Serialization.QuantizedItemSerializer())
+                .registerTypeAdapter(QuantizedItem.class, new Deserialization.QuantizedItemDeserializer())
+                .registerTypeAdapter(Item.class, new Serialization.ItemSerializer())
+                .registerTypeAdapter(Item.class, new Deserialization.ItemDeserializer())
+                .registerTypeAdapter(Admin.class, new Serialization.AdminSerializer())
+                .registerTypeAdapter(Admin.class, new Deserialization.AdminDeserializer())
+                .registerTypeAdapter(Customer.class, new Serialization.CustomerSerializer())
+                .registerTypeAdapter(Customer.class, new Deserialization.CustomerDeserializer())
+                .registerTypeAdapter(Driver.class, new Serialization.DriverSerializer())
+                .registerTypeAdapter(Driver.class, new Deserialization.DriverDeserializer())
+                .registerTypeAdapter(Rating.class, new Serialization.UserRatingSerializer())
+                .registerTypeAdapter(Rating.class, new Deserialization.UserRatingDeserializer())
+                .create();
+    }
+
+    public static Optional<State> loadFrom(File file) {
+        initGsonIfNull();
+        try (FileReader reader = new FileReader(file)) {
+            return Optional.of(gson.fromJson(reader, State.class));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    public static void saveTo(File file, State state) throws IOException {
+        initGsonIfNull();
+        try (FileWriter writer = new FileWriter(file)) {
+            gson.toJson(state, writer);
+        }
+    }
+}
+package app.fooddelivery.ui;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import app.fooddelivery.object.Admin;
+import app.fooddelivery.object.Driver;
+import app.fooddelivery.object.Item;
+import app.fooddelivery.object.Menu;
+import app.fooddelivery.object.Order;
+import app.fooddelivery.service.Restaurant;
+import app.fooddelivery.ui.Utils.Button;
+import app.fooddelivery.ui.Utils.Input;
+import app.fooddelivery.ui.Utils.Line;
+import app.fooddelivery.ui.Utils.Screen;
+import app.fooddelivery.ui.Utils.Term;
+import app.fooddelivery.ui.Utils.Text;
+
+
+public class AdminUI {
+    public static class AdminHome implements Screen {
+        private final Admin admin;
+
+        public AdminHome(Admin admin) {
+            this.admin = admin;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("WELCOME " + admin.getName())));
+
+            List<Line> lines = new ArrayList<>(List.of(
+                    new Button("View Menu", () -> new ViewMenu(admin)),
+                    new Button("View Orders", () -> new ViewOrders(admin)),
+                    new Button("Exit", () -> new LoginUI.Login())));
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class ViewMenu implements Screen {
+        private final Admin admin;
+
+        public ViewMenu(Admin admin) {
+            this.admin = admin;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Menu")));
+
+            List<Line> lines = new ArrayList<>();
+            Menu menu = restaurant.getMenu();
+
+            for (Item item : menu.getItems()) {
+                Button line = new Button(
+                        item.getName() + " --- " + item.getDescription() + " --- $" + item.getPrice(),
+                        () -> new ViewItem(admin, item));
+                lines.add(line);
+            }
+            lines.add(new Button("New Item", () -> new AddItem(admin)));
+            lines.add(new Button("Exit", () -> new AdminHome(admin)));
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class AddItem implements Screen {
+        private final Admin admin;
+
+        public AddItem(Admin admin) {
+            this.admin = admin;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Create new Menu Item")));
+
+            List<Line> lines = new ArrayList<>();
+            Input name = new Input("Item Name: ", false);
+            Input desc = new Input("Item Description: ", false);
+            Input price = new Input("Price: ", false);
+            lines.add(name);
+            lines.add(desc);
+            lines.add(price);
+            lines.add(new Button("Add Item", () -> {
+                try {
+                    double priceD = Double.parseDouble(price.getInput());
+                    Item item = new Item(name.getInput(), desc.getInput(), priceD);
+                    restaurant.getMenu().addItem(item);
+                    return new ViewMenu(admin);
+                } catch (NumberFormatException e) {
+                    return new AddItemError(admin);
+                }
+            }));
+            lines.add(new Button("Exit", () -> {
+                return new ViewMenu(admin);
+            }));
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class AddItemError implements Screen {
+        private final Admin admin;
+
+        public AddItemError(Admin admin) {
+            this.admin = admin;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Create new Menu Item"),
+                    new Text("Error: Price must be a double(ex: 5.20)")));
+
+            List<Line> lines = new ArrayList<>();
+            Input name = new Input("Item Name: ", false);
+            Input desc = new Input("Item Description: ", false);
+            Input price = new Input("Price: ", false);
+            lines.add(name);
+            lines.add(desc);
+            lines.add(price);
+            lines.add(new Button("Add Item", () -> {
+                try {
+                    double priceD = Double.parseDouble(price.getInput());
+                    Item item = new Item(name.getInput(), desc.getInput(), priceD);
+                    restaurant.getMenu().addItem(item);
+                    return new ViewMenu(admin);
+                } catch (NumberFormatException e) {
+                    return new AddItemError(admin);
+                }
+            }));
+            lines.add(new Button("Exit", () -> {
+                return new ViewMenu(admin);
+            }));
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class ViewItem implements Screen {
+        private final Admin admin;
+        private final Item item;
+
+        public ViewItem(Admin admin, Item item) {
+            this.admin = admin;
+            this.item = item;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text(item.getName())));
+
+            List<Line> lines = new ArrayList<>(List.of(
+                    new Button("Edit Name", () -> new EditName(admin, item)),
+                    new Button("Edit Description", () -> new EditDescription(admin, item)),
+                    new Button("Edit Price", () -> new EditPrice(admin, item)),
+                    new Button("Delete Item", () -> new RemoveItem(admin, item)),
+                    new Button("Exit", () -> new ViewMenu(admin))));
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class EditName implements Screen {
+        private final Admin admin;
+        private final Item item;
+
+        public EditName(Admin admin, Item item) {
+            this.admin = admin;
+            this.item = item;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Editing " + item.getName() + "'s Name")));
+
+            List<Line> lines = new ArrayList<>();
+            Input name = new Input("New Name: ", false);
+            lines.add(name);
+            lines.add(new Button("Save Name", () -> {
+                item.editName(name.getInput());
+                return new ViewItem(admin, item);
+            }));
+            lines.add(new Button("Exit", () -> {
+                return new ViewItem(admin, item);
+            }));
+
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class EditDescription implements Screen {
+        private final Admin admin;
+        private final Item item;
+
+        public EditDescription(Admin admin, Item item) {
+            this.admin = admin;
+            this.item = item;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Editing " + item.getName() + "'s Description")));
+
+            List<Line> lines = new ArrayList<>();
+            Input description = new Input("New Description: ", false);
+            lines.add(description);
+            lines.add(new Button("Save Description", () -> {
+                item.editDescription(description.getInput());
+                return new ViewItem(admin, item);
+            }));
+            lines.add(new Button("Exit", () -> {
+                return new ViewItem(admin, item);
+            }));
+
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class EditPrice implements Screen {
+        private final Admin admin;
+        private final Item item;
+
+        public EditPrice(Admin admin, Item item) {
+            this.admin = admin;
+            this.item = item;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Editing " + item.getName() + "'s Price")));
+
+            List<Line> lines = new ArrayList<>();
+            Input price = new Input("New Price: ", false);
+            lines.add(price);
+            lines.add(new Button("Save Price", () -> {
+                try {
+                    double priceD = Double.parseDouble(price.getInput());
+                    item.editPrice(priceD);
+                    return new ViewItem(admin, item);
+                } catch (NumberFormatException e) {
+                    return new EditPriceError(admin, item);
+                }
+            }));
+            lines.add(new Button("Exit", () -> new ViewItem(admin, item)));
+
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class EditPriceError implements Screen {
+        private final Admin admin;
+        private final Item item;
+
+        public EditPriceError(Admin admin, Item item) {
+            this.admin = admin;
+            this.item = item;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Editing " + item.getName() + "'s Price"),
+                    new Text("Error: Price must be a double(ex: 5.20)")));
+
+            List<Line> lines = new ArrayList<>();
+            Input price = new Input("New Price: ", false);
+            lines.add(price);
+            lines.add(new Button("Save Price", () -> {
+                try {
+                    double priceD = Double.parseDouble(price.getInput());
+                    item.editPrice(priceD);
+                    return new ViewItem(admin, item);
+                } catch (NumberFormatException e) {
+                    return new EditPriceError(admin, item);
+                }
+            }));
+            lines.add(new Button("Exit", () -> new ViewItem(admin, item)));
+
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class RemoveItem implements Screen {
+        private final Admin admin;
+        private final Item item;
+
+        public RemoveItem(Admin admin, Item item) {
+            this.admin = admin;
+            this.item = item;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Are you sure you wish to remove " + item.getName())));
+
+            List<Line> lines = new ArrayList<>(List.of(
+                    new Button("Yes", () -> {
+                        restaurant.getMenu().removeItem(item);
+                        return new ViewMenu(admin);
+                    }),
+                    new Button("No", () -> {
+                        return new ViewItem(admin, item);
+                    })));
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class ViewOrders implements Screen {
+        private final Admin admin;
+
+        public ViewOrders(Admin admin) {
+            this.admin = admin;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("All active and inactive orders")));
+
+            List<Line> lines = new ArrayList<>();
+            for (Driver driver : restaurant.getDrivers()) {
+                for (Order order : driver.getOrders()) {
+                    lines.add(new Button(order.getId().toString(), () -> new ViewOrder(admin, order)));
+                }
+            }
+            lines.add(new Button("Exit", () -> new AdminHome(admin)));
+
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class ViewOrder implements Screen {
+        private final Admin admin;
+        private final Order order;
+
+        public ViewOrder(Admin admin, Order order) {
+            this.admin = admin;
+            this.order = order;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Order: " + order.getId().toString()),
+                    new Text("Customer: " + order.getCustomer().getName()),
+                    new Text("ID: " + order.getId().toString()),
+                    new Text("Status: " + order.getStatus().toString())
+
+            ));
+            List<Line> lines = new ArrayList<>();
+            lines.add(new Button("Exit", () -> new ViewOrders(admin)));
+            return Utils.loop(title, lines, term, 6);
+        }
+    }
+}package app.fooddelivery.ui;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import app.fooddelivery.object.Customer;
+import app.fooddelivery.object.Item;
+import app.fooddelivery.object.Menu;
+import app.fooddelivery.object.Order;
+import app.fooddelivery.object.QuantizedItem;
+import app.fooddelivery.object.Rating;
+import app.fooddelivery.service.Restaurant;
+import app.fooddelivery.ui.Utils.Amount;
+import app.fooddelivery.ui.Utils.Button;
+import app.fooddelivery.ui.Utils.Line;
+import app.fooddelivery.ui.Utils.Screen;
+import app.fooddelivery.ui.Utils.Term;
+import app.fooddelivery.ui.Utils.Text;
+
+
+public class CustomerUI {
+    public static class CustomerHome implements Screen {
+        private final Customer customer;
+
+        public CustomerHome(Customer customer) {
+            this.customer = customer;
+        }
+
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("WELCOME " + customer.getName())));
+
+            List<Line> lines = new ArrayList<>();
+            lines.add(new Button("Place Order", () -> new PlaceOrder(customer)));
+            lines.add(new Button("View Order History", () -> new ViewOrderHistory(customer)));
+            lines.add(new Button("Exit", () -> new LoginUI.Login()));
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class PlaceOrder implements Screen {
+        private final Customer customer;
+
+        public PlaceOrder(Customer customer) {
+            this.customer = customer;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Placing New Order for " + customer.getName())));
+
+            Menu menu = restaurant.getMenu();
+
+            List<Line> lines = new ArrayList<>();
+            HashMap<Item, Amount> amount = new HashMap<>();
+
+            for (Item item : menu.getItems()) {
+                Amount line = new Amount(
+                        item.getName() + " --- " + item.getDescription() + " --- $" + item.getPrice());
+                lines.add(line);
+                amount.put(item, line);
+            }
+
+            lines.add(new Button("Place Order", () -> {
+                Order o = new Order(customer);
+
+                for (Map.Entry<Item, Amount> entry : amount.entrySet()) {
+                    if (entry.getValue().quantity() > 0) {
+                        o.addQuantizedItem(new QuantizedItem(
+                                entry.getKey(), entry.getValue().quantity()));
+                    }
+                }
+                if (o.getItems().isEmpty()) {
+                    return new PlaceOrderError(customer);
+                }
+                restaurant.addOrder(o);
+                restaurant.update();
+                customer.addOrder(o);
+                restaurant.writeOrder(o);
+                return new CustomerHome(customer);
+            }));
+            lines.add(new Button("Exit", () -> {
+                return new CustomerHome(customer);
+            }));
+            return Utils.loop(title, lines, term);
+        }
+    }
+    public static class PlaceOrderError implements Screen {
+        private final Customer customer;
+
+        public PlaceOrderError(Customer customer) {
+            this.customer = customer;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Placing New Order for " + customer.getName()),
+                    new Text("ERROR: No items selected")));
+
+            Menu menu = restaurant.getMenu();
+
+            List<Line> lines = new ArrayList<>();
+            HashMap<Item, Amount> amount = new HashMap<>();
+
+            for (Item item : menu.getItems()) {
+                Amount line = new Amount(
+                        item.getName() + " --- " + item.getDescription() + " --- $" + item.getPrice());
+                lines.add(line);
+                amount.put(item, line);
+            }
+
+            lines.add(new Button("Place Order", () -> {
+                Order o = new Order(customer);
+
+                for (Map.Entry<Item, Amount> entry : amount.entrySet()) {
+                    if (entry.getValue().quantity() > 0) {
+                        o.addQuantizedItem(new QuantizedItem(
+                                entry.getKey(), entry.getValue().quantity()));
+                    }
+                }
+                if (o.getItems().isEmpty()) {
+                    return new PlaceOrderError(customer);
+                }
+                restaurant.addOrder(o);
+                restaurant.update();
+                customer.addOrder(o);
+                restaurant.writeOrder(o);
+                return new CustomerHome(customer);
+            }));
+            lines.add(new Button("Exit", () -> {
+                return new CustomerHome(customer);
+            }));
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class ViewOrderHistory implements Screen {
+        private final Customer customer;
+
+        public ViewOrderHistory(Customer customer) {
+            this.customer = customer;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text(customer.getName() + "'s Order History")));
+            List<Line> lines = new ArrayList<>();
+
+            for (Order order : customer.getOrderHistory()) {
+                lines.add(new Button(order.getId().toString(), () -> new ViewOrder(customer, order)));
+            }
+            lines.add(new Button("Exit", () -> new CustomerHome(customer)));
+
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class ViewOrder implements Screen {
+        private final Customer customer;
+        private final Order order;
+
+        public ViewOrder(Customer customer, Order order) {
+            this.customer = customer;
+            this.order = order;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Order: " + order.getId().toString()),
+                    new Text("Customer: " + customer.getName()),
+                    new Text("ID: " + order.getId().toString()),
+                    new Text("Status: " + order.getStatus().toString())
+
+            ));
+            List<Line> lines = new ArrayList<>();
+            if (order.getStatus() == Order.Status.DELIVERED) {
+                lines.add(new Button("Rate Driver", () -> new RateOrder(customer, order)));
+            }
+            lines.add(new Button("Exit", () -> new ViewOrderHistory(customer)));
+            return Utils.loop(title, lines, term, 6);
+        }
+    }
+
+    public static class RateOrder implements Screen {
+        private final Customer customer;
+        private final Order order;
+
+        public RateOrder(Customer customer, Order order) {
+            this.customer = customer;
+            this.order = order;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Rate Order " + order.getId().toString()),
+                    new Text("Rate 1 to 5")
+                ));
+            List<Line> lines = new ArrayList<>();
+            Amount rate = new Amount("", 1, 5);
+            Button enter = new Button("Submit Rating", () -> {
+                Rating rating = new Rating(customer, rate.quantity());
+                restaurant.addRating(order, rating);
+                return new ViewOrder(customer, order);
+            });
+            lines.add(rate);
+            lines.add(enter);
+            return Utils.loop(title, lines, term);
+        }
+    }
+}
+package app.fooddelivery.ui;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import app.fooddelivery.object.Driver;
+import app.fooddelivery.object.Order;
+import app.fooddelivery.object.Rating;
+import app.fooddelivery.service.Restaurant;
+import app.fooddelivery.ui.Utils.Button;
+import app.fooddelivery.ui.Utils.Line;
+import app.fooddelivery.ui.Utils.Screen;
+import app.fooddelivery.ui.Utils.Term;
+import app.fooddelivery.ui.Utils.Text;
+
+
+
+public class DriverUI {
+    public static class DriverHome implements Screen {
+        private final Driver driver;
+
+        public DriverHome(Driver driver) {
+            this.driver = driver;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("WELCOME " + driver.getName())));
+
+            List<Line> lines = new ArrayList<>(List.of(
+                    new Button("View Orders", () -> new ViewOrders(driver)),
+                    new Button("View Rates", () -> new ViewRates(driver)),
+                    new Button("Exit", () -> new LoginUI.Login())));
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class ViewOrders implements Screen {
+        private final Driver driver;
+
+        public ViewOrders(Driver driver) {
+            this.driver = driver;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text(driver.getName() + "'s Orders")));
+            List<Line> lines = new ArrayList<>();
+
+            for (Order order : driver.getOrders()) {
+                lines.add(new Button(order.getId().toString() + " " + order.getStatus(),
+                        () -> new ViewOrder(driver, order)));
+            }
+            lines.add(new Button("Exit", () -> new DriverHome(driver)));
+
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class ViewOrder implements Screen {
+        private final Driver driver;
+        private final Order order;
+
+        public ViewOrder(Driver driver, Order order) {
+            this.driver = driver;
+            this.order = order;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("Order: " + order.getId().toString()),
+                    new Text("Customer: " + order.getCustomer().getName()),
+                    new Text("Status: " + order.getStatus().toString())));
+            List<Line> lines = new ArrayList<>();
+            if (order.getStatus() == Order.Status.ACCEPTED) {
+                lines.add(new Button("Update to In-Progress", () -> {
+                    order.updateStatus(Order.Status.INPROGRESS);
+                    return new ViewOrders(driver);
+                }));
+            }
+            if (order.getStatus() == Order.Status.INPROGRESS) {
+                lines.add(new Button("Update to Delivered", () -> {
+                    order.updateStatus(Order.Status.DELIVERED);
+                    restaurant.update();
+                    return new ViewOrders(driver);
+                }));
+            }
+            lines.add(new Button("Exit", () -> {
+                return new ViewOrders(driver);
+            }));
+            return Utils.loop(title, lines, term, 6);
+        }
+    }
+
+    public static class ViewRates implements Screen {
+        private final Driver driver;
+
+        public ViewRates(Driver driver) {
+            this.driver = driver;
+        }
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text(driver.getName() + "'s Rates")));
+            List<Line> lines = new ArrayList<>();
+
+            for (Rating rate : driver.getRates()) {
+                lines.add(new Text(rate.toString()));
+            }
+            lines.add(new Button("Exit", () -> new DriverHome(driver)));
+
+            return Utils.loop(title, lines, term);
+        }
+    }
+}package app.fooddelivery.ui;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import app.fooddelivery.object.Admin;
+import app.fooddelivery.object.Customer;
+import app.fooddelivery.object.Driver;
+import app.fooddelivery.object.User;
+import app.fooddelivery.service.Restaurant;
+import app.fooddelivery.ui.AdminUI.AdminHome;
+import app.fooddelivery.ui.CustomerUI.CustomerHome;
+import app.fooddelivery.ui.DriverUI.DriverHome;
+import app.fooddelivery.ui.Utils.Button;
+import app.fooddelivery.ui.Utils.Input;
+import app.fooddelivery.ui.Utils.Line;
+import app.fooddelivery.ui.Utils.Screen;
+import app.fooddelivery.ui.Utils.Term;
+import app.fooddelivery.ui.Utils.Text;
+
+
+public class LoginUI {
+    public static class Login implements Screen {
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("PLEASE LOGIN")));
+
+            Input username = new Input("Username: ", false);
+            Input password = new Input("Password: ", true);
+
+            List<Line> lines = new ArrayList<>();
+            lines.add(username);
+            lines.add(password);
+            lines.add(new Button("Login", () -> {
+                String user = username.getInput();
+                String pass = password.getInput();
+
+                User u = restaurant.getUser(user);
+                if (u != null && u.checkPassword(pass)) {
+                    if (u instanceof Customer) {
+                        return new CustomerHome((Customer) u);
+                    }
+                    if (u instanceof Driver) {
+                        return new DriverHome((Driver) u);
+                    }
+                    if (u instanceof Admin) {
+                        return new AdminHome((Admin) u);
+                    }
+                }
+                return new LoginError();
+            }));
+
+            lines.add(new Button("Exit", () -> new LoginExit()));
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class LoginError implements Screen {
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+
+            List<Line> title = new ArrayList<>(List.of(
+                    new Text("ISLAND GIRLS DELIVERY SERVICE"),
+                    new Text("PLEASE LOGIN"),
+                    new Text("INVALID USERNAME OR PASSWORD")
+                ));
+
+            Input username = new Input("Username: ", false);
+            Input password = new Input("Password: ", true);
+
+            List<Line> lines = new ArrayList<>();
+            lines.add(username);
+            lines.add(password);
+            lines.add(new Button("Login", () -> {
+                String user = username.getInput();
+                String pass = password.getInput();
+
+                User u = restaurant.getUser(user);
+                if (u != null && u.checkPassword(pass)) {
+                    if (u instanceof Customer) {
+                        return new CustomerHome((Customer) u);
+                    }
+                    if (u instanceof Driver) {
+                        return new DriverHome((Driver) u);
+                    }
+                    if (u instanceof Admin) {
+                        return new AdminHome((Admin) u);
+                    }
+                }
+                return new LoginError();
+            }));
+
+            lines.add(new Button("Exit", () -> new LoginExit()));
+            return Utils.loop(title, lines, term);
+        }
+    }
+
+    public static class LoginExit implements Screen {
+        @Override
+        public Screen run(Term term, Restaurant restaurant) {
+            term.clear();
+            System.exit(0);
+            return null;
+        }
+    }
+}package app.fooddelivery.ui;
+
+import java.io.IOException;
+import java.util.List;
+
+import com.googlecode.lanterna.TerminalSize;
+import com.googlecode.lanterna.TextColor;
+import com.googlecode.lanterna.graphics.TextGraphics;
+import com.googlecode.lanterna.input.KeyStroke;
+import com.googlecode.lanterna.input.KeyType;
+import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
+import com.googlecode.lanterna.terminal.Terminal;
+
+import app.fooddelivery.service.Restaurant;
+
+public class Utils {
+        public interface Screen {
+                Screen run(Term term, Restaurant restaurant);
+        }
+
+        public interface Line {
+                String render(boolean selected);
+
+                void onKey(KeyStroke key);
+        }
+
+        interface Action {
+                Screen run();
+        }
+
+        public static class Term {
+                private Terminal terminal;
+                private TextGraphics text;
+                private TerminalSize size;
+
+                public Term() {
+                        DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
+                        try {
+                                this.terminal = defaultTerminalFactory.createTerminal();
+                                this.size = terminal.getTerminalSize();
+                                text = terminal.newTextGraphics().setForegroundColor(TextColor.ANSI.GREEN);
+                        } catch (IOException e) {
+                                System.err.println("Failed to create terminal");
+                        }
+                }
+
+                public Terminal terminal() {
+                        return terminal;
+                }
+
+                public TextGraphics text() {
+                        return text;
+                }
+
+                public TerminalSize size() {
+                        return size;
+                }
+
+                public KeyStroke readKey() {
+                        try {
+                                return terminal.readInput();
+                        } catch (IOException e) {
+                                System.err.println("Failed to read terminal input");
+                                return null;
+                        }
+                }
+
+                public void flush() {
+                        try {
+                                terminal.flush();
+                        } catch (IOException e) {
+                                System.err.println("Failed to flush terminal");
+                        }
+                }
+
+                public void clear() {
+                        try {
+                                terminal.clearScreen();
+                        } catch (IOException e) {
+                                System.err.println("Failed to clear terminal");
+
+                        }
+                }
+
+        }
+
+        public static class Text implements Line {
+                private String label;
+
+                Text(String label) {
+                        this.label = label;
+                }
+                @Override
+                public String render(boolean selected) {
+                        return label;
+                }
+                @Override
+                public void onKey(KeyStroke key) {
+                }
+        }
+
+        public static class Button implements Line {
+                private String label;
+                private Action action;
+                private Screen result = null;
+
+                Button(String label, Action action) {
+                        this.label = label;
+                        this.action = action;
+                }
+                @Override
+                public String render(boolean selected) {
+                        return (selected ? "> " : " ") + label;
+                }
+                @Override
+                public void onKey(KeyStroke key) {
+                        if (key.getKeyType() == KeyType.Enter) {
+                                result = action.run();
+                        }
+                }
+
+                public Screen result() {
+                        Screen temp = result;
+                        result = null;
+                        return temp;
+                }
+        }
+
+        public static class Amount implements Line {
+                private final String label;
+                private int quantity;
+                final int min;
+                final int max;
+
+                Amount(String label) {
+                        this.label = label;
+                        this.min = 0;
+                        this.max = 100;
+                        this.quantity = this.min;
+                }
+
+                Amount(String label, int min, int max) {
+                        this.label = label;
+                        this.quantity = min;
+                        this.min = min;
+                        this.max = max;
+                }
+                @Override
+                public String render(boolean selected) {
+                        return (selected ? "> " : " ") + label + " - " + quantity + " + ";
+                }
+                @Override
+                public void onKey(KeyStroke key) {
+                        if (key.getKeyType() == KeyType.ArrowRight && quantity < max) {
+                                quantity++;
+                        }
+                        if (key.getKeyType() == KeyType.ArrowLeft && quantity > min) {
+                                quantity--;
+                        }
+                }
+
+                public int quantity() {
+                        return quantity;
+                }
+        }
+
+        public static class Input implements Line {
+                private final String label;
+                private String value = "";
+                private final boolean hidden;
+
+                Input(String label, boolean hidden) {
+                        this.label = label;
+                        this.hidden = hidden;
+                }
+                @Override
+                public String render(boolean selected) {
+                        String display = hidden ? "*".repeat(value.length()) : value;
+                        return (selected ? "> " : " ") + label + " " + display;
+                }
+                @Override
+                public void onKey(KeyStroke key) {
+                        if (key.getKeyType() == KeyType.Character) {
+                                value += key.getCharacter();
+                        }
+                        if (key.getKeyType() == KeyType.Backspace && value.length() > 0) {
+                                value = value.substring(0, value.length() - 1);
+                        }
+                }
+
+                public String getInput() {
+                        return value;
+                }
+        }
+        
+        public static void render(List<Line> lines, int selection, TerminalSize screenSize, TextGraphics text, int y) {
+                for (int i = 0; i < lines.size(); i++) {
+                        String line = lines.get(i).render(i == selection);
+
+                        text.putString(0, y + i, " ".repeat(screenSize.getColumns()));
+                        int x = screenSize.getColumns() / 2 - line.length() / 2;
+                        text.putString(x, y + i, line);
+                }
+        }
+        public static void render(Line line, int selection, TerminalSize screenSize, TextGraphics text, int y) {
+                        String txt = line.render(false);
+                        text.putString(0, y, " ".repeat(screenSize.getColumns()));
+                        int x = screenSize.getColumns() / 2 - txt.length() / 2;
+                        text.putString(x, y, txt);
+        }
+
+
+        public static int keyPress(int selection, KeyStroke key, List<Line> lines) {
+                if (key.getKeyType() == KeyType.ArrowDown)
+                        selection++;
+                else if (key.getKeyType() == KeyType.ArrowUp)
+                        selection--;
+                else if (key.getKeyType() == KeyType.Enter && (lines.get(selection) instanceof Utils.Input
+                                || lines.get(selection) instanceof Utils.Amount))
+                        selection++;
+
+                if (selection < 0)
+                        selection = lines.size() - 1;
+                if (selection >= lines.size())
+                        selection = 0;
+
+                return selection;
+        }
+
+        public static Screen loop(List<Line> title, List<Line> lines, Term term) {
+                int selection = 0;
+
+                render(title, -1, term.size(), term.text(), 0);
+                render(lines, selection, term.size(), term.text(), 3);
+                Line footer = new Text("↑↓ Navigate   Enter Select   ←→ Change Quantity");
+                render(footer, -1, term.size(), term.text(), term.size().getRows() - 1);
+
+                term.flush();
+
+                while (true) {
+                        KeyStroke key = term.readKey();
+                        if (key == null) {
+                                continue;
+                        }
+                        Line current = lines.get(selection);
+                        current.onKey(key);
+
+                        if (current instanceof Button) {
+                                Button b = (Button) current;
+                                Screen next = b.result();
+                                if (next != null) {
+                                        return next;
+                                }
+                        }
+
+                        selection = keyPress(selection, key, lines);
+
+                        render(title, -1, term.size(), term.text(), 0);
+                        render(lines, selection, term.size(), term.text(), 3);
+                        render(footer, -1, term.size(), term.text(), term.size().getRows() - 1);
+
+
+                        term.flush();
+                }
+        }
+
+        public static Screen loop(List<Line> title, List<Line> lines, Term term, int y) {
+                int selection = 0;
+
+                render(title, -1, term.size(), term.text(), 0);
+                render(lines, selection, term.size(), term.text(), y);
+                Line footer = new Text("↑↓ Navigate   Enter Select   ←→ Change Quantity");
+                render(footer, -1, term.size(), term.text(), term.size().getRows() - 1);
+
+                term.flush();
+
+                while (true) {
+                        KeyStroke key = term.readKey();
+                        
+                        if (key == null) {
+                                continue;
+                        }
+
+                        Line current = lines.get(selection);
+                        current.onKey(key);
+
+                        if (current instanceof Button) {
+                                Button b = (Button) current;
+                                Screen next = b.result();
+                                if (next != null) {
+                                        return next;
+                                }
+                        }
+
+                        selection = keyPress(selection, key, lines);
+
+                        render(title, -1, term.size(), term.text(), 0);
+                        render(lines, selection, term.size(), term.text(), y);
+                        render(footer, -1, term.size(), term.text(), term.size().getRows() - 1);
+
+                        term.flush();
+                }
+        }
+}

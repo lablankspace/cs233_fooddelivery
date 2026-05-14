@@ -110,7 +110,7 @@ public class Deserialization {
         public Driver deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject object = json.getAsJsonObject();
             Driver driver = new Driver(object.get("name").getAsString(),UUID.fromString(object.get("id").getAsString()),hexToBytes(object.get("phash").getAsString()));
-            Rating[] ratings = context.deserialize(object.get("Rating"), Rating[].class);
+            Rating[] ratings = context.deserialize(object.get("rating"), Rating[].class);
             for (Rating r : ratings) {
                 driver.addRate(r);
             }
